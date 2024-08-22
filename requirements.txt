@@ -1,0 +1,8 @@
+numpy
+pandas
+chromadb
+ollama
+nltk
+beautifulsoup4
+requests
+html5lib
