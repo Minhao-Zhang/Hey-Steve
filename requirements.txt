@@ -1,8 +1,7 @@
-numpy
-pandas
-chromadb
-ollama
-nltk
+markdown
+markdownify
 beautifulsoup4
 requests
-html5lib
+html2text
+ollama
+jupyter
