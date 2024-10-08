@@ -7,6 +7,9 @@ import ollama
 from langchain_text_splitters import MarkdownHeaderTextSplitter
 from tqdm import tqdm
 
+LONG_CONTEXT_MODEL = '48k-llama3.2:1b'
+GENERAL_MODEL = 'llama3.2'
+
 
 def html2md(html: str) -> str:
     """Custom function to convert HTML to Markdown
@@ -69,11 +72,8 @@ def remove_code(text: str) -> str:
 
 def remove_unnecessary_sections(text: str) -> str:
     """
-    Remove some unnecessary sections from the text. These sections are 
-     ['Achievements', 'Advancements', 'Contents', 'Data values', 
-     'Entities', 'External links', 'Gallery', 'History', 'Issues', 
-     'Navigation', 'Navigation menu', 'References', 'Sounds', 
-     'Trivia', 'Video', '|']
+    Remove some unnecessary sections from the text. 
+    See source for the list of sections to remove.
 
     Args:
         text (str): markdown style text
@@ -180,7 +180,53 @@ def scrape_mob(url: str, cache=True):
     return text_pre + '\n' + text[title_last:]
 
 
-def chunk_and_contextualize_text(text: str) -> List[str]:
+def parse_mob_info_table(text: str) -> str:
+    """
+    Extra processing for the ill-formed mob info table
+
+    Args:
+        text (str): Markdown content for mob page
+
+    Returns:
+        str: Markdown content with mob info table processed
+    """
+
+    # remove anything before "Health points" but the title
+    title = text[:text.index('\n')]
+    text = text[text.index('Health points'):]
+    # the health points will have a form of number x number
+    # we need to remove the second number
+    try:
+        linebreak_index = text.index('\n')
+        health_str = re.sub(r"× \d+(\.\d+)?( |$)", "", text[:linebreak_index])
+        print(health_str)
+        text = health_str + text[linebreak_index:]
+    except ValueError:
+        pass
+    split_index = text.index('## ')
+    text_pre = text[:split_index]
+    text_post = text[split_index:]
+
+    text_pre = text_pre.split('\n')
+    text_pre_keep = text_pre[-4:-3]
+
+    table = text_pre[:-4]
+
+    table_content = "\n".join(table)
+
+    messages = [
+        {'role': 'system',
+            'content': f'You are editing mob content for the Minecraft wiki. The following is an ill-formatted markdown table that describes information about the mob {title[2:]}. The table can have many rows but only two columns. Please summarize the table content and write them in bullet form. Respond only with the required information and nothing else .'},
+        {'role': 'user', 'content': table_content}
+    ]
+
+    response = ollama.chat(model=GENERAL_MODEL, messages=messages)
+    formatted_table_content = response['message']['content']
+
+    return title + '\n\n' + "\n".join(text_pre_keep) + '\n\n' + formatted_table_content + '\n\n' + text_post
+
+
+def chunk_and_contextualize_text(text: str, doc_type: str = None) -> List[str]:
     """
     Chunk the text into smaller parts and add some context to the text
 
@@ -215,7 +261,7 @@ def chunk_and_contextualize_text(text: str) -> List[str]:
         Please give a short succinct context to situate this chunk within the overall document for the purposes of improving search retrieval of the chunk. Answer only with the succinct context and nothing else. 
         """
         messages = [{'role': 'user', 'content': msg}]
-        response = ollama.chat(model='48k-llama3.2:1b', messages=messages)
+        response = ollama.chat(model=LONG_CONTEXT_MODEL, messages=messages)
         text_chunks_contextual.append(
             response['message']['content'] + chunk_text)
 
