@@ -1,7 +1,11 @@
 import re
+from typing import List
 import requests
 import html2text
 import warnings
+import ollama
+from langchain_text_splitters import MarkdownHeaderTextSplitter
+from tqdm import tqdm
 
 
 def html2md(html: str) -> str:
@@ -134,16 +138,9 @@ def scrape_normal(url: str, cache=True) -> str:
         with open(f'cache/{url[len(URL_HEAD):]}.html', 'w') as file:
             file.write(html)
 
-    # Convert HTML to Markdown
     md = html2md(html)
-
-    # Remove '[edit | edit source]' from the Markdown content
     md = remove_edit_source(md)
-
-    # Remove code from the Markdown content
-    md = remove_code(md)
-
-    # Remove some unnecessary sections from the Markdown content
+    # md = remove_code(md)
     md = remove_unnecessary_sections(md)
 
     return md
@@ -160,10 +157,12 @@ def scrape_mob(url: str, cache=True):
         str: Markdown content
     """
     text = scrape_normal(url, cache)
+    write_to_file('temp.md', text)
 
-    text = text.split('## Spawning')
+    title_last = text.index('##')
+    text_pre = text[:title_last]
 
-    text_pre = text[0].split('\n')
+    text_pre = text_pre.split('\n')
 
     # remove disambiguate content
     title = text_pre[0][2:]
@@ -172,7 +171,52 @@ def scrape_mob(url: str, cache=True):
 
     # between the first ## Spawning heading
     # there's a json object that we need to remove
-    text_pre = text_pre[:text_pre.index('    {')]
-    text_pre = "\n".join(text_pre)
+    json_start = text_pre.index('    {')
+    json_end = text_pre.index('    }')
+    text_pre = text_pre[:json_start] + text_pre[json_end + 1:]
 
-    return text_pre + '\n## Spawning' + text[1]
+    text_pre = '\n'.join(text_pre)
+
+    return text_pre + '\n' + text[title_last:]
+
+
+def chunk_and_contextualize_text(text: str) -> List[str]:
+    """
+    Chunk the text into smaller parts and add some context to the text
+
+    Args:
+        text (str): Markdown content
+
+    Returns:
+        List[str]: Contextualized and chunked text based on markdown headers
+    """
+
+    headers_to_split_on = [
+        ("#", "Header 1"),
+        ("##", "Header 2"),
+        ("###", "Header 3"),
+    ]
+    splitter = MarkdownHeaderTextSplitter(headers_to_split_on)
+    text_chunks = splitter.split_text(text)
+
+    text_chunks_contextual = []
+
+    for chunk in tqdm(text_chunks, desc="Processing chunks"):
+        chunk_text = chunk.page_content
+
+        msg = f"""
+        <document> 
+        {text} 
+        </document> 
+        Here is the chunk we want to situate within the Minecraft wiki document
+        <chunk> 
+        {chunk_text}
+        </chunk> 
+        Please give a short succinct context to situate this chunk within the overall document for the purposes of improving search retrieval of the chunk. Answer only with the succinct context and nothing else. 
+        """
+        messages = [{'role': 'user', 'content': msg}]
+        response = ollama.chat(model='48k-llama3.2:1b', messages=messages)
+        text_chunks_contextual.append(
+            response['message']['content'] + chunk_text)
+
+    return text_chunks_contextual

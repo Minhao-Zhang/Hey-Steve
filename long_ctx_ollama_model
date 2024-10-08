@@ -1,2 +1,2 @@
-FROM llama3.2:1b
-PARAMETER num_ctx 49152
+FROM llama3.2
+PARAMETER num_ctx 24576
