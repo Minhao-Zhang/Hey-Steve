@@ -57,19 +57,6 @@ def remove_edit_source(text: str) -> str:
     return re.sub(r'\[edit \| edit source\]', '', text)
 
 
-def remove_code(text: str) -> str:
-    """
-    Remove code from text
-
-    Args:
-        text (str): markdown style text
-
-    Returns:
-        str: text with code removed
-    """
-    return re.sub(r'`[^`]+`', '', text)
-
-
 def remove_unnecessary_sections(text: str) -> str:
     """
     Remove some unnecessary sections from the text. 
@@ -140,7 +127,6 @@ def scrape_normal(url: str, cache=True) -> str:
 
     md = html2md(html)
     md = remove_edit_source(md)
-    # md = remove_code(md)
     md = remove_unnecessary_sections(md)
 
     return md
@@ -157,11 +143,10 @@ def scrape_mob(url: str, cache=True):
         str: Markdown content
     """
     text = scrape_normal(url, cache)
-    write_to_file('temp.md', text)
 
+    # find the first level 2 heading
     title_last = text.index('##')
     text_pre = text[:title_last]
-
     text_pre = text_pre.split('\n')
 
     # remove disambiguate content
@@ -199,7 +184,6 @@ def parse_mob_info_table(text: str) -> str:
     try:
         linebreak_index = text.index('\n')
         health_str = re.sub(r"× \d+(\.\d+)?( |$)", "", text[:linebreak_index])
-        print(health_str)
         text = health_str + text[linebreak_index:]
     except ValueError:
         pass
@@ -226,7 +210,7 @@ def parse_mob_info_table(text: str) -> str:
     return title + '\n\n' + "\n".join(text_pre_keep) + '\n\n' + formatted_table_content + '\n\n' + text_post
 
 
-def chunk_and_contextualize_text(text: str, doc_type: str = None) -> List[str]:
+def chunk_and_contextualize_text(text: str) -> List[str]:
     """
     Chunk the text into smaller parts and add some context to the text
 
@@ -266,3 +250,81 @@ def chunk_and_contextualize_text(text: str, doc_type: str = None) -> List[str]:
             response['message']['content'] + chunk_text)
 
     return text_chunks_contextual
+
+
+def extract_items():
+    """
+    Extract all the items from the Minecraft wiki and write them to a file.
+    """
+
+    url = "https://minecraft.wiki/w/Item"
+
+    # try to get the content from the cache
+    try:
+        with open('cache/Item.html', 'r') as f:
+            item = f.read()
+    except:
+        response = requests.get(url)
+        item = response.text
+
+    h = html2text.HTML2Text()
+    h.ignore_links = False
+    h.ignore_images = True
+    h.ignore_emphasis = True
+    h.skip_internal_links = True
+    h.unicode_snob = True
+    h.body_width = 0
+    md = h.handle(item)
+
+    start = md.index('## List of items')
+    end = md.index('## Unimplemented items')
+
+    list_of_items_md = md[start:end]
+
+    matches = re.findall(r"/w/([^ ]+) ", list_of_items_md)
+    items = set(matches)
+    items = sorted(list(items))
+    items = '\n'.join(items)
+
+    write_to_file('urls/items.txt', items)
+
+
+def extract_blocks():
+    """
+    Extract all the blocks from the Minecraft wiki and write them to a file.
+    """
+
+    url = "https://minecraft.wiki/w/Block"
+
+    # try to get the content from the cache
+    try:
+        with open('cache/Block.html', 'r') as f:
+            item = f.read()
+    except:
+        response = requests.get(url)
+        item = response.text
+
+    h = html2text.HTML2Text()
+    h.ignore_links = False
+    h.ignore_images = True
+    h.ignore_emphasis = True
+    h.skip_internal_links = True
+    h.unicode_snob = True
+    h.body_width = 0
+    md = h.handle(item)
+
+    start = md.index('## List of blocks')
+    end = md.index('### Technical blocks')
+
+    list_of_blocks_md = md[start:end]
+
+    matches = re.findall(r"/w/([^ ]+) ", list_of_blocks_md)
+    blocks = set(matches)
+    blocks = sorted(list(blocks))
+    # remove all the image files
+    blocks = [block for block in blocks if block[:5] != 'File:']
+    # remove the disambiguation tag
+    blocks = [re.sub(r'_\\\(block\\\)', '', block) for block in blocks]
+    blocks = '\n'.join(blocks)
+
+    write_to_file('urls/blocks.txt', blocks)
