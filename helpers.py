@@ -8,7 +8,7 @@ from langchain_text_splitters import MarkdownHeaderTextSplitter
 from tqdm import tqdm
 
 LONG_CONTEXT_MODEL = '48k-llama3.2:1b'
-GENERAL_MODEL = 'llama3.2'
+GENERAL_MODEL = '24k-llama3.2:latest'
 
 
 def html2md(html: str) -> str:
@@ -91,7 +91,7 @@ def remove_unnecessary_sections(text: str) -> str:
     return '\n'.join(new_text)
 
 
-def scrape_normal(url: str, cache=True) -> str:
+def scrape(url: str, cache=True) -> str:
     """
     Scrape the content of a normal page
 
@@ -132,17 +132,16 @@ def scrape_normal(url: str, cache=True) -> str:
     return md
 
 
-def scrape_mob(url: str, cache=True):
+def remove_disambiguation_and_json(text: str) -> str:
     """
-    Scrape the content of a mob page
+    Remove the disambiguation content and json object
 
     Args:
-        url (str): URL of the page
+        text (str): Markdown content
 
     Returns:
         str: Markdown content
     """
-    text = scrape_normal(url, cache)
 
     # find the first level 2 heading
     title_last = text.index('##')
@@ -318,13 +317,63 @@ def extract_blocks():
 
     list_of_blocks_md = md[start:end]
 
-    matches = re.findall(r"/w/([^ ]+) ", list_of_blocks_md)
-    blocks = set(matches)
-    blocks = sorted(list(blocks))
+    blocks = re.findall(r"/w/([^ ]+) ", list_of_blocks_md)
+
     # remove all the image files
     blocks = [block for block in blocks if block[:5] != 'File:']
+
     # remove the disambiguation tag
     blocks = [re.sub(r'_\\\(block\\\)', '', block) for block in blocks]
+
+    # there are some blocks variant that will redirect to their main page
+    # remove them and keep only the main page
+    # wood
+    WOOD_VARIANTS = ['Oak', 'Spruce', 'Birch', 'Jungle', 'Acacia', 'Dark_Oak',
+                     'Mangrove', 'Cherry', 'Pale_Oak', 'Crimson', 'Warped', 'Azalea', 'Bamboo']
+    COLOR_VARIANTS = ['White', 'Light_Gray', 'Gray', 'Black', 'Brown', 'Red', 'Orange', 'Yellow',
+                      'Lime', 'Green', 'Cyan', 'Light_Blue', 'Blue', 'Purple', 'Magenta', 'Pink']
+    CORAL_VARIANTS = ['Tube', 'Brain', 'Bubble', 'Fire', 'Horn',
+                      'Dead_Tube', 'Dead_Brain', 'Dead_Bubble', 'Dead_Fire', 'Dead_Horn']
+    COPPER_VARIANTS = ['Waxed', 'Waxed_Exposed', 'Waxed_Weathered',
+                       'Waxed_Oxidized', 'Exposed', 'Weathered', 'Oxidized']
+
+    WOOD_REDIRECTS = ['Button', 'Door', 'Fence', 'Fence_Gate', 'Hanging_Sign', 'Leaves',
+                      'Log', 'Planks', 'Pressure_Plate', 'Sapling', 'Sign', 'Slab', 'Stairs', 'Trapdoor', 'Wood', 'Hyphae', 'Stem']
+    COLOR_REDIRECTS = ['Candle', 'Carpet', 'Concrete', 'Concrete_Powder', 'Glazed_Terracotta', 'Shulker_Box', 'Stained_Glass',
+                       'Stained_Glass_Pane', 'Terracotta', 'Wool', 'Bed', 'Banner']
+    CORAL_REDIRECTS = ['Coral', 'Coral_Block', 'Coral_Fan']
+    COPPER_REDIRECTS = ['Block_of_Copper', 'Chiseled_Copper', 'Copper_Bulb', 'Copper_Door', 'Copper_Grate', 'Copper_Trapdoor',
+                        'Cut_Copper', 'Cut_Copper_Slab', 'Cut_Copper_Stairs']
+
+    INFESTED_BLOCKS = ['Infested_Chiseled_Stone_Bricks', 'Infested_Cracked_Stone_Bricks', 'Infested_Mossy_Stone_Bricks',
+                       'Infested_Stone', 'Infested_Stone_Bricks', 'Infested_Cobblestone', 'Infested_Mossy_Cobblestone']
+
+    to_remove = ['Chipped_Anvil', 'Damaged_Anvil',
+                 'Light_Block', 'Planned_versions']
+    for w_v in WOOD_VARIANTS:
+        for w_r in WOOD_REDIRECTS:
+            to_remove.append(w_v + '_' + w_r)
+    for c_v in COLOR_VARIANTS:
+        for c_r in COLOR_REDIRECTS:
+            to_remove.append(c_v + '_' + c_r)
+    for c_v in CORAL_VARIANTS:
+        for c_r in CORAL_REDIRECTS:
+            to_remove.append(c_v + '_' + c_r)
+    for c_v in COPPER_VARIANTS:
+        for c_r in COPPER_REDIRECTS:
+            to_remove.append(c_v + '_' + c_r)
+    to_remove += INFESTED_BLOCKS
+
+    to_remove = set(to_remove)
+    blocks = [block for block in blocks if block not in to_remove]
+
+    WOOD_DIRECTS = ['Wooden_Button', 'Wooden_Door', 'Wooden_Fence', 'Fence_Gate', 'Hanging_Sign', 'Leaves',
+                    'Log', 'Planks', 'Wooden_Pressure_Plate', 'Sapling', 'Sign', 'Wooden_Slab', 'Wooden_Stairs', 'Wooden_Trapdoor', 'Wood']
+    to_add = WOOD_DIRECTS + CORAL_REDIRECTS + COPPER_REDIRECTS
+    to_add.append('Infested_Block')
+    blocks.extend(to_add)
+
+    blocks = sorted(set(blocks))
     blocks = '\n'.join(blocks)
 
     write_to_file('urls/blocks.txt', blocks)
