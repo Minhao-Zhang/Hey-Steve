@@ -1,7 +1,6 @@
 requests
 html2text
 ollama
+openai
 jupyter
-chromadb
-langchain_text_splitters 
 tqdm

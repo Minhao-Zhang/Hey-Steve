@@ -11,26 +11,23 @@ Provided endpoint for any model you wish to use for the RAG.
 
 ## Run this yourself 
 
-Clone this repository then install the required packages.
+1. Clone the repository
 ```bash
-conda create -n mc-assistant python=3.11.9
-pip install -r requirements.txt
+git clone git@github.com:Minhao-Zhang/MC-AI-Assistant.git
 ```
-
-Pull some LLMs from Ollama. 
-This is dependent on the LLMs you want to use and how much VRAM you have available. 
-Here, I will use the llama3.2 model families. 
-```bash
-ollama pull llama3.2 
+2. Install the requirements
+```bash 
+conda create -n mc-assistance python=3.12.8
 ```
+3. Download all the pages as into `downloads`. 
+    
+    As far as I understand, the content on [minecraft.wiki](https://minecraft.wiki) are licensed under [cc by-nc-sa 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/deed.en). Thus, I will not include them in here. 
 
-Create data and cache directory. 
-```bash
-mkdir data cache 
-```
+    I provided several files in the `urls` folder. They are all page names as they all share a common prefix of `https://minecraft.wiki/w/`. Thus, I would dynamically pad the URLs with the prefix.
+    
+    1. You can directly use `sh download.sh PATH_TO_URL_FILE` or `.\Download-Webpages.ps1 PATH_TO_URL_FILE` to download all the pages. You can see them under `downloads`. 
+    2. You can alternatively update the URLs as mine might be outdated. You can run `python get_page_names.py` to get the latest URLs. 
 
-Scrape data from Minecraft wiki. 
-This is done in [scrape.ipynb](scrape.ipynb) since un unknown bug would occur if it is run in a python script. 
-You will be banned for a while if you scrape too much. 
-A cache system is implemented to reduce the number of requests. 
+    These URL files are very important as they allow us to process each types of page differently. Currently, I am only considering `mobs`, `blocks`, and `items` in Java version of Minecraft. 
 
+4. Run the `python html_to_markdown.py PATH_TO_URL_FILE` to process the pages into a semi-refined markdown file. In the process, only the most basic information is kept. 

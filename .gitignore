@@ -1,6 +1,5 @@
+downloads/
 data/
-cache/
-chromadb/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

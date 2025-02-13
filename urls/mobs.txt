@@ -48,6 +48,7 @@ Zombified_Piglin
 Blaze
 Bogged
 Breeze
+Creaking
 Creeper
 Elder_Guardian
 Endermite

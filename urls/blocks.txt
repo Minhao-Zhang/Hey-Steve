@@ -45,6 +45,7 @@ Block_of_Raw_Copper
 Block_of_Raw_Gold
 Block_of_Raw_Iron
 Block_of_Redstone
+Block_of_Resin
 Block_of_Stripped_Bamboo
 Blue_Ice
 Blue_Orchid
@@ -59,6 +60,7 @@ Brown_Mushroom
 Brown_Mushroom_Block
 Bubble_Column
 Budding_Amethyst
+Button
 Cactus
 Cake
 Calcite
@@ -80,6 +82,7 @@ Chiseled_Nether_Bricks
 Chiseled_Polished_Blackstone
 Chiseled_Quartz_Block
 Chiseled_Red_Sandstone
+Chiseled_Resin_Bricks
 Chiseled_Sandstone
 Chiseled_Stone_Bricks
 Chiseled_Tuff
@@ -87,6 +90,7 @@ Chiseled_Tuff_Bricks
 Chorus_Flower
 Chorus_Plant
 Clay
+Closed_Eyeblossom
 Coal_Ore
 Coarse_Dirt
 Cobbled_Deepslate
@@ -164,6 +168,7 @@ Diorite_Wall
 Dirt
 Dirt_Path
 Dispenser
+Door
 Dragon_Egg
 Dragon_Head
 Dried_Kelp_Block
@@ -171,8 +176,8 @@ Dripstone_Block
 Dropper
 Emerald_Ore
 Enchanting_Table
-End_Gateway
-End_Portal
+End_Gateway_(block)
+End_Portal_(block)
 End_Portal_Frame
 End_Rod
 End_Stone
@@ -183,6 +188,7 @@ End_Stone_Bricks
 Ender_Chest
 Exposed_Copper
 Farmland
+Fence
 Fence_Gate
 Fern
 Fire
@@ -215,6 +221,7 @@ Heavy_Weighted_Pressure_Plate
 Honey_Block
 Honeycomb_Block
 Hopper
+Hyphae
 Ice
 Infested_Block
 Infested_Deepslate
@@ -223,7 +230,7 @@ Iron_Door
 Iron_Ore
 Iron_Trapdoor
 Item_Frame
-Jack_o%27Lantern
+Jack_o'Lantern
 Jigsaw_Block
 Jukebox
 Kelp
@@ -236,6 +243,7 @@ Lava
 Leaves
 Lectern
 Lever
+Light_(block)
 Light_Weighted_Pressure_Plate
 Lightning_Rod
 Lilac
@@ -275,7 +283,7 @@ Nether_Brick_Stairs
 Nether_Brick_Wall
 Nether_Bricks
 Nether_Gold_Ore
-Nether_Portal
+Nether_Portal_(block)
 Nether_Quartz_Ore
 Nether_Sprouts
 Nether_Wart
@@ -286,6 +294,7 @@ Observer
 Obsidian
 Ochre_Froglight
 Ominous_Banner
+Open_Eyeblossom
 Orange_Tulip
 Oxeye_Daisy
 Oxidized_Copper
@@ -339,6 +348,7 @@ Poppy
 Potato
 Powder_Snow
 Powered_Rail
+Pressure_Plate
 Prismarine
 Prismarine_Brick_Slab
 Prismarine_Brick_Stairs
@@ -377,6 +387,11 @@ Redstone_Torch
 Redstone_Wire
 Reinforced_Deepslate
 Repeating_Command_Block
+Resin_Brick_Slab
+Resin_Brick_Stairs
+Resin_Brick_Wall
+Resin_Bricks
+Resin_Clump
 Respawn_Anchor
 Rooted_Dirt
 Rose_Bush
@@ -400,6 +415,7 @@ Shroomlight
 Shulker_Box
 Sign
 Skeleton_Skull
+Slab
 Slime_Block
 Small_Amethyst_Bud
 Small_Dripleaf
@@ -428,6 +444,8 @@ Soul_Soil
 Soul_Torch
 Sponge
 Spore_Blossom
+Stairs
+Stem
 Sticky_Piston
 Stone
 Stone_Brick_Slab
@@ -455,6 +473,8 @@ Stripped_Mangrove_Log
 Stripped_Mangrove_Wood
 Stripped_Oak_Log
 Stripped_Oak_Wood
+Stripped_Pale_Oak_Log
+Stripped_Pale_Oak_Wood
 Stripped_Spruce_Log
 Stripped_Spruce_Wood
 Stripped_Warped_Hyphae
@@ -475,6 +495,7 @@ Tinted_Glass
 Torch
 Torchflower
 Torchflower_Crop
+Trapdoor
 Trapped_Chest
 Trial_Spawner
 Tripwire
@@ -508,11 +529,4 @@ White_Tulip
 Wither_Rose
 Wither_Skeleton_Skull
 Wood
-Wooden_Button
-Wooden_Door
-Wooden_Fence
-Wooden_Pressure_Plate
-Wooden_Slab
-Wooden_Stairs
-Wooden_Trapdoor
 Zombie_Head
