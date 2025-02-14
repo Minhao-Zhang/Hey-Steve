@@ -99,6 +99,18 @@ def remove_junk_content(markdown_content: str) -> str:
     return "\n".join(lines)
 
 
+def replace_weird_code(markdown_content: str) -> str:
+    replace_table = {
+        "×": "x",
+        chr(8204): ""
+    }
+
+    for key, value in replace_table.items():
+        markdown_content = markdown_content.replace(key, value)
+
+    return markdown_content
+
+
 def main(url_file):
     with open(url_file, "r") as f:
         names = f.readlines()
@@ -113,6 +125,7 @@ def main(url_file):
         md_content = remove_unwanted_heading_2(md_content)
         md_content = remove_json_blocks(md_content)
         md_content = remove_junk_content(md_content)
+        md_content = replace_weird_code(md_content)
 
         with open(f"data/{name}.md", "w") as f:
             f.write(md_content)

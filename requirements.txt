@@ -2,5 +2,6 @@ requests
 html2text
 ollama
 openai
+google-genai
 jupyter
 tqdm

@@ -181,6 +181,19 @@ def extract_blocks():
         file.write(blocks)
 
 
+def gen_name_list(filename: str):
+    # Insert data into LightRAG
+    with open(filename, "r") as f:
+        names = f.readlines()
+        names = [name.strip() for name in names]
+
+        # Process the name a bit
+        names = [name.replace("'", "_") for name in names]
+        names = [name.replace("(", "_").replace(")", "_") for name in names]
+
+    return names
+
+
 if __name__ == "__main__":
     extract_items()
     extract_blocks()
