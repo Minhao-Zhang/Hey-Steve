@@ -99,9 +99,14 @@ class SiliconFlowClient(LLMClient):
             }
         ]
 
-        response = self.llm_client.chat.completions.create(
+        response = self.client.chat.completions.create(
             messages=messages,
             model=self.model,
         )
 
         return response.choices[0].message.content.strip()
+
+
+if __name__ == "__main__":
+    siliconflow_client = SiliconFlowClient()
+    print(siliconflow_client.chat("Why is the sky blue?"))
