@@ -1,4 +1,5 @@
 import re
+from mc_ai_assistant.utils import LLMClient
 
 
 def split_markdown_sections(text):
@@ -62,3 +63,22 @@ def split_markdown_sections(text):
     description = "\n".join(description_lines).strip()
 
     return title, disambiguation, table_text, description
+
+
+def extract_table(table_text: str, llm_client: LLMClient, prompt_template: str = "../prompt_template/extract_table.txt"):
+    """
+    Extracts a table from the table_text, which is a Markdown-formatted table.
+
+    Args:
+        table_text (str): Markdown-formatted table
+        llm_client (LLMClient): LLMClient object to use for language model queries
+
+    Returns:
+        list: List of dictionaries, where each dictionary represents a row in the table
+    """
+    with open(prompt_template, 'r') as f:
+        pt = f.read()
+
+    user_prompt = pt + table_text
+    response = llm_client.chat(user_prompt)
+    return response

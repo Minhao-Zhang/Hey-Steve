@@ -1,5 +1,6 @@
 downloads/
 data/
+raw_md/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
