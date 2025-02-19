@@ -2,6 +2,7 @@ You are tasked to extract some information from a potentially ill-formed markdow
 Regardless of what content the table is, the table will have exactly two columns. 
 The first column will be property and the second column will be the value of that property. 
 Extract the property and its value in a json format. 
+Reply with the json table and nothing else.
 Here is an example:
 The sample text. 
 ======================================

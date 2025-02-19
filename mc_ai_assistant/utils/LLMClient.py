@@ -2,6 +2,7 @@ import os
 from ollama import Client
 from openai import OpenAI
 from google import genai
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 
 class LLMClient:
@@ -75,11 +76,12 @@ class GeminiClient(LLMClient):
         super().__init__(api_key, model)
         self.client = genai.Client(api_key=api_key)
 
-    def chat(self, user_message):
-        response = self.client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=[user_message])
-        return response.text.strip()
+        @retry(stop=stop_after_attempt(60), wait=wait_exponential(multiplier=1, min=1, max=60))
+        def chat(self, user_message):
+            response = self.client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=[user_message])
+            return response.text.strip()
 
 
 class SiliconFlowClient(LLMClient):
@@ -91,6 +93,7 @@ class SiliconFlowClient(LLMClient):
         self.client = OpenAI(api_key=api_key,
                              base_url="https://api.siliconflow.cn/v1")
 
+    @retry(stop=stop_after_attempt(60), wait=wait_exponential(multiplier=1, min=1, max=60))
     def chat(self, user_message):
         messages = [
             {

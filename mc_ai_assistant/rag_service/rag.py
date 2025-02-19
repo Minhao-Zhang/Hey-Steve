@@ -6,8 +6,10 @@ from typing import List, Dict, Any
 
 
 class MC_RAG:
+    _id_counter = 0
+
     def __init__(self, collection_name: str = "mc_rag"):
-        self.client = chromadb.Client()
+        self.client = chromadb.PersistentClient()
         self.embedding_fn = OllamaEmbeddingFunction(
             # this shall be changed in the near future.
             url="http://localhost:11434/api/embeddings",
@@ -20,7 +22,9 @@ class MC_RAG:
 
     def add_documents(self, documents: List[Dict[str, Any]]):
         """Add documents to the collection"""
-        ids = [str(i) for i in range(len(documents))]
+        start_id = MC_RAG._id_counter
+        ids = [str(start_id + i) for i in range(len(documents))]
+        MC_RAG._id_counter += len(documents)
         texts = [doc["text"] for doc in documents]
 
         self.collection.add(

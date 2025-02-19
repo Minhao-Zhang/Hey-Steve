@@ -6,3 +6,4 @@ google-genai
 jupyter
 tqdm
 chromadb
+langchain

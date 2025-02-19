@@ -1,8 +1,9 @@
 import re
+import json
 from mc_ai_assistant.utils import LLMClient
 
 
-def split_markdown_sections(text):
+def extract_sections(text):
     """
     Splits a Markdown document into:
     1. Title (Markdown H1 heading)
@@ -11,7 +12,7 @@ def split_markdown_sections(text):
     4. description Section (everything after two blank lines, stopping before a level 2 heading)
 
     Returns:
-        tuple (title, disambiguation, table, description)
+        tuple (title, disambiguation, table, description, remaining_text)
     """
 
     # Step 1: Extract the Title
@@ -62,10 +63,12 @@ def split_markdown_sections(text):
         i += 1
     description = "\n".join(description_lines).strip()
 
-    return title, disambiguation, table_text, description
+    remaining_text = "\n".join(lines[i:]).strip()
+
+    return title, disambiguation, table_text, description, remaining_text
 
 
-def extract_table(table_text: str, llm_client: LLMClient, prompt_template: str = "../prompt_template/extract_table.txt"):
+def extract_table(table_text: str, llm_client: LLMClient, prompt_template: str = "./mc_ai_assistant/prompt_template/extract_table.txt"):
     """
     Extracts a table from the table_text, which is a Markdown-formatted table.
 
@@ -81,4 +84,51 @@ def extract_table(table_text: str, llm_client: LLMClient, prompt_template: str =
 
     user_prompt = pt + table_text
     response = llm_client.chat(user_prompt)
-    return response
+    # Extract content from markdown code block
+    code_block_match = re.search(
+        r'```(?:json)?\n(.*?)\n```', response, re.DOTALL)
+    if code_block_match:
+        return code_block_match.group(1)
+    return response  # Fallback if no code block found
+
+
+def parse_json_to_markdown(json_str: str) -> str:
+    """
+    Parses a JSON string containing a list of key-value pairs into markdown format.
+
+    Args:
+        json_str (str): JSON string containing a list of key-value pairs
+
+    Returns:
+        str: Markdown formatted string
+    """
+    try:
+        data = json.loads(json_str)
+        if not isinstance(data, dict):
+            raise ValueError("Input JSON must be an object")
+
+        markdown_lines = []
+        for key, value in data.items():
+            markdown_lines.append(f"- **{key}**: {value}")
+        return "\n".join(markdown_lines)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON: {str(e)}")
+
+
+def parse_json_to_python(json_str: str) -> list:
+    """
+    Parses a JSON string into a Python list of dictionaries.
+
+    Args:
+        json_str (str): JSON string to parse
+
+    Returns:
+        list: Python list of dictionaries
+    """
+    try:
+        data = json.loads(json_str)
+        if not isinstance(data, dict):
+            raise ValueError("Input JSON must be an object")
+        return [data]
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON: {str(e)}")
