@@ -1,6 +1,5 @@
-downloads/
 data/
-raw_md/
+chroma/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

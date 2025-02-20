@@ -113,22 +113,3 @@ def parse_json_to_markdown(json_str: str) -> str:
         return "\n".join(markdown_lines)
     except json.JSONDecodeError as e:
         raise ValueError(f"Invalid JSON: {str(e)}")
-
-
-def parse_json_to_python(json_str: str) -> list:
-    """
-    Parses a JSON string into a Python list of dictionaries.
-
-    Args:
-        json_str (str): JSON string to parse
-
-    Returns:
-        list: Python list of dictionaries
-    """
-    try:
-        data = json.loads(json_str)
-        if not isinstance(data, dict):
-            raise ValueError("Input JSON must be an object")
-        return [data]
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON: {str(e)}")

@@ -20,17 +20,17 @@ def chunk_markdown(markdown_text):
     return splitter.split_text(markdown_text)
 
 
-def semantic_chunks(chunks):
+def semantic_chunks(chunks, chunk_size=500):
     """
     Processes a list of markdown chunks using a given llm_client to perform semantic chunking.
 
     Args:
         chunks (list): A list of markdown chunks (strings).
+        chunk_size (int): The approximate chunk size
 
     Returns:
         list: List of strings containing the semantically chunked text.
     """
-    chunk_size = 1000
     processed_chunks = []
     for chunk in chunks:
         current_chunk = ""

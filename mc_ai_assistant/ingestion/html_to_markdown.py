@@ -127,7 +127,7 @@ def main(url_file):
         md_content = remove_junk_content(md_content)
         md_content = replace_weird_code(md_content)
 
-        with open(f"data/{name}.md", "w") as f:
+        with open(f"data/downloads/{name}.md", "w") as f:
             f.write(md_content)
 
 

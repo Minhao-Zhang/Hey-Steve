@@ -45,7 +45,7 @@ class OllamaClient(LLMClient):
                  model="qwen2.5:latest"
                  ):
         super().__init__(api_key, model)
-        self.client = Client()
+        self.llm_client = Client()
 
     def chat(self, user_message):
         messages = [
@@ -56,7 +56,7 @@ class OllamaClient(LLMClient):
         ]
 
         options = {
-            "num_ctx": 1024*4,
+            # "num_ctx": 1024*4,
         }
 
         response = self.llm_client.chat(
@@ -76,12 +76,38 @@ class GeminiClient(LLMClient):
         super().__init__(api_key, model)
         self.client = genai.Client(api_key=api_key)
 
-        @retry(stop=stop_after_attempt(60), wait=wait_exponential(multiplier=1, min=1, max=60))
-        def chat(self, user_message):
-            response = self.client.models.generate_content(
-                model="gemini-2.0-flash",
-                contents=[user_message])
-            return response.text.strip()
+    @retry(stop=stop_after_attempt(60), wait=wait_exponential(multiplier=1, min=1, max=60))
+    def chat(self, user_message):
+        response = self.client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[user_message])
+        return response.text.strip()
+
+
+class OpenRouterClient(LLMClient):
+    def __init__(self,
+                 api_key=os.getenv("OPENROUTER_API_KEY"),
+                 model="google/gemini-2.0-flash-lite-preview-02-05:free"
+                 ):
+        super().__init__(api_key, model)
+        self.client = OpenAI(api_key=api_key,
+                             base_url="https://openrouter.ai/api/v1")
+
+    @retry(stop=stop_after_attempt(60), wait=wait_exponential(multiplier=1, min=1, max=60))
+    def chat(self, user_message):
+        messages = [
+            {
+                "role": "user",
+                "content": user_message
+            }
+        ]
+
+        response = self.client.chat.completions.create(
+            messages=messages,
+            model=self.model,
+        )
+
+        return response.choices[0].message.content.strip()
 
 
 class SiliconFlowClient(LLMClient):

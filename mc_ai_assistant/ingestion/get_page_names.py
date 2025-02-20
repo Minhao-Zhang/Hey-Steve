@@ -92,7 +92,7 @@ def extract_items():
 
     # try to get the content from the cache
     try:
-        with open('downloads/Item.html', 'r') as f:
+        with open('data/downloads/Item.html', 'r') as f:
             item = f.read()
     except:
         response = requests.get(url)
@@ -138,7 +138,7 @@ def extract_blocks():
 
     # try to get the content from the cache
     try:
-        with open('downloads/Block.html', 'r') as f:
+        with open('data/downloads/Block.html', 'r') as f:
             block = f.read()
     except:
         response = requests.get(url)

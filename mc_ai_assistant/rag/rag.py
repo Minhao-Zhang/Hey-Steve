@@ -6,8 +6,6 @@ from typing import List, Dict, Any
 
 
 class MC_RAG:
-    _id_counter = 0
-
     def __init__(self, collection_name: str = "mc_rag"):
         self.client = chromadb.PersistentClient()
         self.embedding_fn = OllamaEmbeddingFunction(
@@ -19,12 +17,13 @@ class MC_RAG:
             name=collection_name,
             embedding_function=self.embedding_fn
         )
+        self._id_counter = self.collection.count()
 
-    def add_documents(self, documents: List[Dict[str, Any]]):
+    def add_documents(self, documents: List[str]):
         """Add documents to the collection"""
-        start_id = MC_RAG._id_counter
+        start_id = self._id_counter
         ids = [str(start_id + i) for i in range(len(documents))]
-        MC_RAG._id_counter += len(documents)
+        self._id_counter += len(documents)
         texts = [doc["text"] for doc in documents]
 
         self.collection.add(
@@ -32,7 +31,7 @@ class MC_RAG:
             documents=texts
         )
 
-    def query(self, query_text: str, n_results: int = 3) -> List[Dict[str, Any]]:
+    def query(self, query_text: str, n_results: int = 5) -> List[Dict[str, Any]]:
         """Query the collection and return relevant documents"""
         results = self.collection.query(
             query_texts=[query_text],
@@ -62,6 +61,40 @@ class MC_RAG:
 
         # Generate response
         return self.generate_response(query_text, context)
+
+    def load_chunks_into_rag(self, chunks_dir="data/chunks"):
+        """Loads JSON chunks from files in the specified directory into the RAG."""
+        import os
+        import json
+
+        files = [f for f in os.listdir(chunks_dir) if f.endswith('.json')]
+        total_files = len(files)
+
+        for i, filename in enumerate(files):
+            filepath = os.path.join(chunks_dir, filename)
+            print(f"Processing {filename} ({i+1}/{total_files})")
+
+            try:
+                with open(filepath, 'r') as f:
+                    data = json.load(f)
+
+                    if isinstance(data, list):
+                        for item in data:
+                            if isinstance(item, str):
+                                # Assuming MC_RAG has an add method
+                                self.add_documents([{"text": item}])
+                            else:
+                                print(
+                                    f"Warning: Skipping non-string item in {filename}: {item}")
+                    else:
+                        print(f"Warning: Skipping non-list data in {filename}")
+
+            except FileNotFoundError:
+                print(f"Error: File not found: {filepath}")
+            except json.JSONDecodeError:
+                print(f"Error: Invalid JSON in {filepath}")
+            except Exception as e:
+                print(f"Error processing {filename}: {e}")
 
 
 # Example usage
