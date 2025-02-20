@@ -1,19 +1,19 @@
-# MC AI Assistant
+# Hey Steve
 
-A Minecraft Assistant that provides information about mobs, blocks, items, and more using LLM powered RAG. 
+Hey Steve is an AI assistant that provides information about Minecraft. 
 
 Minecraft wiki is scraped as knowledge base. 
 Then, Langchain is used to dynamically chunk the data into paragraphs. 
 Contextual Retrieval is used to assist RAG in finding the most relevant information.
-Special embed models are used to ensure accuracy and efficiency 
-ChromaDB is used to store vector data for the RAG. 
+Large embed models are used to ensure accuracy and efficiency 
+ChromaDB is used to store vectorized data for the RAG. 
 Provided endpoint for any model you wish to use for the RAG. 
 
 ## Run this yourself 
 
 1. Clone the repository
 ```bash
-git clone git@github.com:Minhao-Zhang/MC-AI-Assistant.git
+git clone git@github.com:Minhao-Zhang/HeySteve.git
 ```
 2. Install the requirements
 ```bash 

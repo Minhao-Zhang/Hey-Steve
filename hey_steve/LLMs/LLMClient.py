@@ -56,7 +56,7 @@ class OllamaClient(LLMClient):
         ]
 
         options = {
-            # "num_ctx": 1024*4,
+            "num_ctx": 1024*4,
         }
 
         response = self.llm_client.chat(

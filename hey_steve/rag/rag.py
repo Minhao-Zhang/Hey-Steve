@@ -5,7 +5,8 @@ from chromadb.utils.embedding_functions.ollama_embedding_function import (
 from typing import List, Dict, Any
 
 
-class MC_RAG:
+class SteveRAG:
+    # this shall be changed the next time I embed
     def __init__(self, collection_name: str = "mc_rag"):
         self.client = chromadb.PersistentClient()
         self.embedding_fn = OllamaEmbeddingFunction(
@@ -47,20 +48,12 @@ class MC_RAG:
             for i in range(len(results["documents"][0]))
         ]
 
-    def generate_response(self, query_text: str, context: List[str]) -> str:
-        """Generate a response using the retrieved context"""
-        # Placeholder for actual LLM integration
-        context_str = "\n".join(context)
-        return f"Based on the context:\n{context_str}\n\nResponse to '{query_text}'"
-
-    def rag_pipeline(self, query_text: str) -> str:
-        """Complete RAG pipeline"""
+    def retrieve_docs(self, query_text: str, n_results: int = 5) -> List[str]:
         # Retrieve relevant documents
-        retrieved_docs = self.query(query_text)
+        retrieved_docs = self.query(query_text, n_results=n_results)
         context = [doc["text"] for doc in retrieved_docs]
 
-        # Generate response
-        return self.generate_response(query_text, context)
+        return context
 
     def load_chunks_into_rag(self, chunks_dir="data/chunks"):
         """Loads JSON chunks from files in the specified directory into the RAG."""
@@ -95,21 +88,3 @@ class MC_RAG:
                 print(f"Error: Invalid JSON in {filepath}")
             except Exception as e:
                 print(f"Error processing {filename}: {e}")
-
-
-# Example usage
-if __name__ == "__main__":
-    rag = MC_RAG()
-
-    # Add sample documents
-    sample_docs = [
-        {"text": "ChromaDB is a vector database for AI applications."},
-        {"text": "RAG combines retrieval and generation for better AI responses."},
-        {"text": "Embeddings are numerical representations of text."}
-    ]
-    rag.add_documents(sample_docs)
-
-    # Query the system
-    query = "What is ChromaDB?"
-    response = rag.rag_pipeline(query)
-    print(response)

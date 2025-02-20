@@ -1,5 +1,5 @@
-from mc_ai_assistant.processing.extract_heading_info import extract_sections, extract_table, parse_json_to_markdown
-from mc_ai_assistant.processing.contextual_embedding import get_context_for_chunk
+from hey_steve.processing.extract_heading_info import extract_sections, extract_table, parse_json_to_markdown
+from hey_steve.processing.contextual_embedding import get_context_for_chunk
 import os
 import json
 

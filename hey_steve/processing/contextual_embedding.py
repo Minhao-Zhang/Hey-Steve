@@ -1,7 +1,7 @@
-from mc_ai_assistant.utils import LLMClient
+from hey_steve.LLMs import LLMClient
 
 
-def get_context_for_chunk(llm_client: LLMClient, md_context: str, chunk: str, prompt_template: str = "./mc_ai_assistant/prompt_template/contexual_chunk.txt"):
+def get_context_for_chunk(llm_client: LLMClient, md_context: str, chunk: str, prompt_template: str = "./hey_steve/prompt_template/contexual_chunk.txt"):
     """
     Gets the context for a chunk of text using a language model.
 

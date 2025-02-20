@@ -1,6 +1,6 @@
 import re
 import json
-from mc_ai_assistant.utils import LLMClient
+from hey_steve.LLMs import LLMClient
 
 
 def extract_sections(text):
@@ -68,7 +68,7 @@ def extract_sections(text):
     return title, disambiguation, table_text, description, remaining_text
 
 
-def extract_table(table_text: str, llm_client: LLMClient, prompt_template: str = "./mc_ai_assistant/prompt_template/extract_table.txt"):
+def extract_table(table_text: str, llm_client: LLMClient, prompt_template: str = "./hey_steve/prompt_template/extract_table.txt"):
     """
     Extracts a table from the table_text, which is a Markdown-formatted table.
 
