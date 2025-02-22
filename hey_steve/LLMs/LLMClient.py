@@ -1,8 +1,11 @@
+from dotenv import load_dotenv
 import os
 from ollama import Client
 from openai import OpenAI
 from google import genai
 from tenacity import retry, stop_after_attempt, wait_exponential
+
+load_dotenv()
 
 
 class LLMClient:
@@ -118,6 +121,32 @@ class SiliconFlowClient(LLMClient):
         super().__init__(api_key, model)
         self.client = OpenAI(api_key=api_key,
                              base_url="https://api.siliconflow.cn/v1")
+
+    @retry(stop=stop_after_attempt(60), wait=wait_exponential(multiplier=1, min=1, max=60))
+    def chat(self, user_message):
+        messages = [
+            {
+                "role": "user",
+                "content": user_message
+            }
+        ]
+
+        response = self.client.chat.completions.create(
+            messages=messages,
+            model=self.model,
+        )
+
+        return response.choices[0].message.content.strip()
+
+
+class DeepSeekClient(LLMClient):
+    def __init__(self,
+                 api_key=os.getenv("DEEPSEEK_API_KEY"),
+                 model="deepseek-chat"
+                 ):
+        super().__init__(api_key, model)
+        self.client = OpenAI(api_key=api_key,
+                             base_url="https://api.deepseek.com/v1")
 
     @retry(stop=stop_after_attempt(60), wait=wait_exponential(multiplier=1, min=1, max=60))
     def chat(self, user_message):

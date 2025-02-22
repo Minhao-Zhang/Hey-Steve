@@ -2,7 +2,7 @@ from hey_steve.rag import SteveRAG
 from hey_steve.LLMs.LLMClient import LLMClient
 
 
-class HeySteve:
+class SteveAgent:
     def __init__(self,
                  steve_rag: SteveRAG,
                  llm_client: LLMClient,
@@ -18,6 +18,5 @@ class HeySteve:
         context = self.steve_rag.retrieve_docs(query, n_results=n_results)
         user_prompt = self.context_prompt_tempate.format(
             context="\n".join(context), query=query)
-        print(len(user_prompt))
         response = self.llm_client.chat(user_prompt)
         return response

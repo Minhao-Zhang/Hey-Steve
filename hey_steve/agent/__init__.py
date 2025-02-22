@@ -1,1 +1,1 @@
-from .agent import HeySteve
+from .agent import SteveAgent

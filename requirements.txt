@@ -7,3 +7,5 @@ jupyter
 tqdm
 chromadb
 langchain
+pandas
+python-dotenv
