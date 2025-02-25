@@ -1,6 +1,27 @@
+import os
+from hey_steve.LLMs import LLMClient
 import re
 import json
-from hey_steve.LLMs import LLMClient
+
+
+def save_property(directory, filename, table_json_string):
+    """
+    Extracts and saves table data to a JSON file.
+    """
+    properties_dir = os.path.join(directory, "data/properties")
+    properties_file_path = os.path.join(
+        properties_dir, f"{filename[:-3]}.json"
+    )
+
+    try:
+        table_json = json.loads(table_json_string)
+        with open(properties_file_path, "w") as outfile:
+            json.dump(table_json, outfile, indent=4)
+        print(f"Saved table to {properties_file_path}")
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
+    except Exception as e:
+        print(f"Error saving table to file: {e}")
 
 
 def extract_sections(text):
@@ -68,7 +89,7 @@ def extract_sections(text):
     return title, disambiguation, table_text, description, remaining_text
 
 
-def extract_table(table_text: str, llm_client: LLMClient, prompt_template: str = "./hey_steve/prompt_template/extract_table.txt"):
+def extract_property(table_text: str, llm_client: LLMClient, prompt_template: str = "./hey_steve/prompt_template/extract_table.txt"):
     """
     Extracts a table from the table_text, which is a Markdown-formatted table.
 

@@ -1,0 +1,8 @@
+You are fluent with Minecraft game mechanics.
+You are tasked to describe markdown tabular data into text. 
+Describe the table in a natural language with key focus on the row name and coloumn name. 
+Reply with the description and nothing else. 
+
+Here is the markdown formmated table text to describe:
+
+{md_table}

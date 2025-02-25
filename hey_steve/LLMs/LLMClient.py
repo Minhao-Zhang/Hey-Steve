@@ -49,6 +49,11 @@ class OllamaClient(LLMClient):
                  ):
         super().__init__(api_key, model)
         self.llm_client = Client()
+        try:
+            self.llm_client.list()
+        except Exception as e:
+            raise Exception(
+                f"Ollama server is not running or not accessible: {e}")
 
     def chat(self, user_message):
         messages = [
