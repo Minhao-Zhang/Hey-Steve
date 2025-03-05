@@ -1,14 +1,16 @@
-from hey_steve.LLMs import *
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 import argparse
 import re
 import html2text
 
-UNWANTED_HEADING_2 = ['Achievements', 'Advancements', 'Contents', 'Data values',
-                      'Entities', 'External links', 'Gallery', 'History', 'Issues',
-                      'Navigation', 'Navigation menu', 'References', 'Sounds',
-                      'Trivia', 'Video', 'Videos', 'See also']
+# UNWANTED_HEADING_2 = ['Achievements', 'Advancements', 'Contents', 'Data values',
+#                       'Entities', 'External links', 'Gallery', 'History', 'Issues',
+#                       'Navigation', 'Navigation menu', 'References', 'Sounds',
+#                       'Trivia', 'Video', 'Videos', 'See also']
+UNWANTED_HEADING_2 = ['Contents', 'Data values', 'External links', 'Gallery',
+                      'Issues', 'Navigation', 'Navigation menu', 'References',
+                      'Sounds', 'Video', 'Videos', 'See also']
 
 
 def convert_html_to_markdown(html_file):
@@ -112,20 +114,20 @@ def parse_html_tables(markdown_content):
             break
         table_text = markdown_content[start: end + len("</table>")]
         md_table_text = html_table_to_markdown(table_text)
-        md_table_text = describe_table(md_table_text)
+        # md_table_text = describe_table(md_table_text)
         markdown_content = markdown_content[:start] + \
             md_table_text + markdown_content[end + len("</table>"):]
 
     return markdown_content
 
 
-def describe_table(markdown_content):
-    llm_client = OllamaClient()
-    with open("hey_steve/prompt_template/table_to_text.txt", "r") as f:
-        pt = f.read()
+# def describe_table(markdown_content):
+#     llm_client = OllamaClient()
+#     with open("hey_steve/prompt_template/table_to_text.txt", "r") as f:
+#         pt = f.read()
 
-    user_message = pt.format(md_table=markdown_content)
-    return llm_client.chat(user_message=user_message)
+#     user_message = pt.format(md_table=markdown_content)
+#     return llm_client.chat(user_message=user_message)
 
 
 def remove_unwanted_heading_2(markdown_content):
@@ -187,7 +189,7 @@ def remove_junk_content(markdown_content: str) -> str:
     return "\n".join(lines)
 
 
-def replace_weird_code(markdown_content: str) -> str:
+def replace_weird_unicode(markdown_content: str) -> str:
     replace_table = {
         "×": "x",
         chr(8204): ""
@@ -214,7 +216,7 @@ def main(url_file):
         md_content = remove_unwanted_heading_2(md_content)
         md_content = remove_json_blocks(md_content)
         md_content = remove_junk_content(md_content)
-        md_content = replace_weird_code(md_content)
+        md_content = replace_weird_unicode(md_content)
 
         with open(f"data/md/{name}.md", "w") as f:
             f.write(md_content)

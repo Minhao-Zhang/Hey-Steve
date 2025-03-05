@@ -48,13 +48,6 @@ class SteveRAG:
             for i in range(len(results["documents"][0]))
         ]
 
-    def retrieve_docs(self, query_text: str, n_results: int = 5) -> List[str]:
-        # Retrieve relevant documents
-        retrieved_docs = self.query(query_text, n_results=n_results)
-        context = [doc["text"] for doc in retrieved_docs]
-
-        return context
-
     def load_chunks_into_rag(self, chunks_dir="data/chunks"):
         """Loads JSON chunks from files in the specified directory into the RAG."""
         import os

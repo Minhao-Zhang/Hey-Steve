@@ -1,11 +1,14 @@
 requests
 html2text
-ollama
-openai
-google-genai
 jupyter
 tqdm
+ollama
 chromadb
 langchain
 pandas
 python-dotenv
+smolagents[litellm,gradio]
+arize-phoenix
+opentelemetry-sdk
+opentelemetry-exporter-otlp
+openinference-instrumentation-smolagents
