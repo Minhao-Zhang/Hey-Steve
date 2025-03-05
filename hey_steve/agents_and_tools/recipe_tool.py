@@ -16,7 +16,7 @@ class RecipeTool(Tool):
     }
     output_type = "string"
 
-    def __init__(self, dir: str = "data/recipe", **kwargs):
+    def __init__(self, dir: str = "data/mc/recipe", **kwargs):
 
         super().__init__(**kwargs)
         self.recipe_files = [f for f in os.listdir(dir) if f.endswith('.json')]
