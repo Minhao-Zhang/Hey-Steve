@@ -11,6 +11,11 @@ class RetrieverTool(Tool):
         "query": {
             "type": "string",
             "description": "The query to perform. This should be semantically close to your target documents. Use the affirmative form rather than a question.",
+        },
+        "n_result": {
+            "type": "integer",
+            "description": "The positive integer number of document chunks to retrieve. Defaults to 5.",
+            "nullable": True
         }
     }
     output_type = "string"
@@ -19,9 +24,12 @@ class RetrieverTool(Tool):
         super().__init__(**kwargs)
         self.steve_rag = steve_rag
 
-    def forward(self, query: str) -> str:
+    def forward(self, query: str, n_result: str = 5) -> str:
         assert isinstance(query, str), "Your search query must be a string"
-        docs = self.steve_rag.query(query, n_results=5)
+        assert isinstance(n_result, int), "n_result must be an integer"
+        assert n_result > 0, "n_reuslt must be a positive integer"
+
+        docs = self.steve_rag.query_with_reranking(query, n_results=n_result)
         return "\nRetrieved documents:\n" + "".join(
             [f"\n\n===== Document {str(i)} =====\n" +
              doc['text'] for i, doc in enumerate(docs)]

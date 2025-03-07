@@ -1,6 +1,5 @@
 from smolagents import Tool
 import os
-import json
 
 
 class RecipeTool(Tool):
@@ -16,10 +15,12 @@ class RecipeTool(Tool):
     }
     output_type = "string"
 
-    def __init__(self, dir: str = "data/mc/recipe", **kwargs):
+    def __init__(self, directroy: str = "data/mc/recipe", **kwargs):
 
         super().__init__(**kwargs)
-        self.recipe_files = [f for f in os.listdir(dir) if f.endswith('.json')]
+        self.recipe_files = [f for f in os.listdir(
+            directroy) if f.endswith('.json')]
+        self.directroy = directroy
 
     def forward(self, item_name: str) -> str:
         assert isinstance(item_name, str), "Your item_name must be a string"
@@ -27,8 +28,10 @@ class RecipeTool(Tool):
         item_name = item_name.lower()
 
         if item_name + ".json" in self.recipe_files:
-            with open(os.path.join("data/recipe", item_name + ".json"), "r") as f:
-                return f"The crafting recipe for {item_name} is \n" + f.read()
+            with open(os.path.join(self.directroy, item_name + ".json"), "r") as f:
+                return f"The crafting recipe for {item_name} is \n" + f.read() + \
+                    "\n The pattern represents a 3x3 crafting table grid. \
+                        If pattern does not show all 9 positions, if can be in any position while maintian the exact shape."
         else:
             item_name_parts = item_name.split("_")
             possible_matches = set()

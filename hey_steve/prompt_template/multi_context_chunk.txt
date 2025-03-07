@@ -1,0 +1,11 @@
+Here is a markdown file about the game Minecraft 
+"""
+{md_content}
+"""
+Please give a short succinct context to situate the content inside each <chunk> </chunk> pair
+within the overall document for the purposes of improving search retrieval of the chunk. 
+You should first count how many chunks, then generate the context for these chunks.
+Answer in the format of JSON array of chunk_id and chunk context pairs. 
+```json
+{json_string}
+```

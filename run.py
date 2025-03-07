@@ -4,7 +4,7 @@ from openinference.instrumentation.smolagents import SmolagentsInstrumentor
 from opentelemetry.sdk.trace import TracerProvider
 from smolagents import CodeAgent, ToolCallingAgent, DuckDuckGoSearchTool, GradioUI, LiteLLMModel
 from hey_steve.agents_and_tools import *
-from hey_steve.rag import SteveRAG
+from hey_steve.rag import *
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -19,15 +19,26 @@ SmolagentsInstrumentor().instrument(tracer_provider=trace_provider)
 
 model = LiteLLMModel(
     model_id="gemini/gemini-2.0-flash",
-    api_key=os.environ['GEMINI_API_KEY'])
+    api_key=os.environ['GEMINI_API_KEY'],
+)
 
-steve_rag = SteveRAG()
+reranker = Reranker()
+
+steve_rag = SteveRAG(
+    collection_name="mc_rag_3",
+    ollama_embed_model="nomic-embed-text:latest",
+    reranker=reranker)
+# steve_rag.load_chunks_into_rag()
 retrieverTool = RetrieverTool(steve_rag)
 
 
 additional_authorized_imports = []
 
-agent = ToolCallingAgent(tools=[DuckDuckGoSearchTool(
-), retrieverTool, RecipeTool()], model=model, add_base_tools=True)
+agent = ToolCallingAgent(
+    tools=[DuckDuckGoSearchTool(), retrieverTool,
+           RecipeTool(), LootTableTool()],
+    model=model,
+    add_base_tools=True
+)
 
 GradioUI(agent).launch()

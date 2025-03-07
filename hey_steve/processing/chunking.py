@@ -1,116 +1,154 @@
-import hey_steve.processing.process_intro as intro
-import hey_steve.processing.process_body as body
-import hey_steve.processing.contextual_embedding as ctx_chunk
-import hey_steve.processing.split_chunks as split_chunks
-import os
+import argparse
 import json
+import os
+import re
+import time
+
+from litellm import completion
+from .chunking_helper import *
 
 
-def process_introduction(llm_client, directory, filename, md_content):
-    """
-    Processes the introduction section of a markdown file, extracts information,
-    and returns the processed title, property chunks, modified markdown content,
-    and table JSON string.
-    """
-    # Grab the information on the top of page as they need special attention
-    title, disambiguation, table_text, description, rest = intro.extract_sections(
-        md_content
-    )
+def process_md_file(md_content, max_length=1100):
+    header_chunks = chunk_markdown(md_content)
 
-    # Modify md_content
-    if title and rest:
-        md_content = f"{title}\n{rest}"
-    else:
-        md_content = md_content
+    final_md = ""
+    previous_headings = []  # Track previously seen headings
+    all_chunks = []  # Store all valid chunks separately
 
-    table_json_string = None
-    try:
-        table_json_string = intro.extract_property(table_text, llm_client)
-        table_md = intro.parse_json_to_markdown(table_json_string)
-    except Exception as e:
-        print(f"Error extracting table: {e}")
+    for chunk in header_chunks:
+        metadata = chunk.metadata
+        page_content = chunk.page_content
 
-    if table_json_string:
-        from hey_steve.processing.process_intro import save_property
-        save_property(directory, filename, table_json_string)
+        # Extract ordered headings
+        headings = []
+        # Ensure metadata is processed in order
+        for level in sorted(metadata.keys()):
+            headings.append(metadata[level])
 
-    title_short = title[2:] if len(title) > 2 else title
-    table_property = f"{title} has property of {table_md}" if table_md else f"{title} has property of {table_text}"
-    property_chunks = [
-        f"{title_short} has disambiguation information of {disambiguation}",
-        table_property,
-        description,
+        # Identify the last new heading
+        differing_index = 0
+        for i, heading in enumerate(headings):
+            if i >= len(previous_headings) or previous_headings[i] != heading:
+                differing_index = i
+                break
+
+        # Add only new headings
+        for new_heading in headings[differing_index:]:
+            final_md += f"{'#' * (differing_index + 1)} {new_heading}\n"
+            differing_index += 1  # Increase heading level
+
+        previous_headings = headings  # Update tracked headings
+
+        # Process content with multiple tables
+        table_pattern = re.compile(r"<md_table>(.*?)</md_table>", re.DOTALL)
+        # Splits text at every table occurrence
+        parts = table_pattern.split(page_content)
+
+        for i, part in enumerate(parts):
+            # Non-table content (before, between, or after tables)
+            if i % 2 == 0:
+                stripped_part = part.strip()
+                if stripped_part:
+                    text_chunks = chunk_text(stripped_part, max_length)
+                    for text_chunk in text_chunks:
+                        if len(text_chunk) >= 20:  # **Discard chunks < 20 characters**
+                            chunk_text_str = f"<chunk>\n{text_chunk}\n</chunk>\n\n"
+                            final_md += chunk_text_str
+                            all_chunks.append(text_chunk)
+
+            else:  # This is a table (since it's between split results)
+                # Split large tables if necessary
+                table_chunks = split_markdown_table(part)
+                for table_chunk in table_chunks:
+                    if len(table_chunk) >= 20:  # **Discard small table chunks**
+                        chunk_text_str = f"<chunk>\n{table_chunk}\n</chunk>\n\n"
+                        final_md += chunk_text_str
+                        all_chunks.append(table_chunk)
+
+    final_md = replace_chunk_tags(final_md)
+
+    json_tempate = generate_chunk_json_template(len(all_chunks))
+
+    # with open("temp.md", "w") as f:
+    #     f.write(final_md)
+
+    with open("hey_steve/prompt_template/multi_context_chunk.txt", "r") as f:
+        pt = f.read()
+
+    messages = [
+        {"role": "user",
+         "content": pt.format(md_content=final_md, json_string=json_tempate)
+         }
     ]
 
-    return title, property_chunks, md_content, table_json_string
+    response = completion(model="gemini/gemini-2.0-flash-thinking-exp-01-21",
+                          api_key=os.environ['GEMINI_API_KEY'],
+                          messages=messages
+                          )
+    time.sleep(2)
+
+    response_string = response.choices[0].message.content
+    response_string = response_string[7:-4]
+    contexts = json.loads(response_string)
+
+    assert len(contexts) == len(all_chunks)
+
+    context_chunks = []
+    for i, v in enumerate(all_chunks):
+        context_chunks.append(contexts['chunk_' + str(i+1).zfill(3)] + v)
+
+    return context_chunks
 
 
-def process_markdown_file(llm_client, filename, chunks_dir, chunks_file_path):
+def process_md_directory(md_dir="data/md", chunk_dir="data/chunks"):
     """
-    Processes a single markdown file, extracts information,
-    chunks the content, adds context, and saves the chunks to JSON files.
+    Reads all .md files in the specified directory, processes them using process_md_file,
+    and saves the resulting chunks as JSON in another directory.
+
+    Args:
+        md_dir (str): Directory containing markdown files.
+        chunk_dir (str): Directory to save processed chunks.
+
+    Returns:
+        list[str]: A list of all processed chunks.
     """
-    directory = "."
+    # Ensure the chunk directory exists
+    os.makedirs(chunk_dir, exist_ok=True)
 
-    print(f"Processing file: {filename}")
-    filepath = os.path.join(directory, f"data/raw_md/{filename}")
-    try:
-        with open(filepath, "r") as f:
-            md_content = f.read()
-    except FileNotFoundError:
-        print(f"Error: File not found at {filepath}")
-        return  # Skip to the next file
+    # Iterate over markdown files in the directory
+    for filename in sorted(os.listdir(md_dir)):
+        if filename.endswith(".md"):
+            try:
+                md_path = os.path.join(md_dir, filename)
+                chunk_path = os.path.join(
+                    chunk_dir, f"{filename[:-3]}.json")  # JSON output path
 
-    title, property_chunks, md_content, table_json_string = process_introduction(
-        llm_client, directory, filename, md_content)
+                # Skip processing if JSON file already exists
+                if os.path.exists(chunk_path):
+                    print(f"Skipping {filename} (already processed).")
+                    continue
 
-    # Commenting out the original chunking
-    chunks = split_chunks.chunk_markdown(md_content)
-    chunks = property_chunks.extend([c.page_content for c in chunks])
+                # Read the markdown file
+                with open(md_path, "r", encoding="utf-8") as f:
+                    md_content = f.read()
 
-    contextual_chunks = []
-    for chunk in chunks:  # Using the new chunks
-        if ("|" in chunk and "---" in chunk):
-            body.extract_table()
+                # Process the markdown content
+                chunks = process_md_file(md_content)
 
-        context = ctx_chunk.get_context_for_chunk(
-            llm_client, md_content, chunk)
-        contextual_chunks.append(f"{context}\n{chunk}")
+                # Save chunks as JSON
+                with open(chunk_path, "w", encoding="utf-8") as f:
+                    json.dump(chunks, f, indent=2)
 
-    with open(chunks_file_path, "w") as outfile:
-        json.dump(contextual_chunks, outfile, indent=4)
-    print(f"Saved chunks to {chunks_file_path}")
+                print(f"Processed {filename} -> Saved {chunk_path}")
+            except:
+                print(
+                    f"Error in processing {filename}, skipping this for now.")
 
 
-def process_files(llm_client):
-    """
-    Processes markdown files in the raw_md directory, extracts information,
-    chunks the content, adds context, and saves the chunks to JSON files.
-    """
-    directory = "."
-
-    # Create chunks directory if it doesn't exist
-    chunks_dir = os.path.join(directory, "data/chunks")
-    if not os.path.exists(chunks_dir):
-        os.makedirs(chunks_dir)
-
-    raw_md_path = os.path.join(directory, "data/raw_md")
-    if not os.path.exists(raw_md_path):
-        filenames = []
-    else:
-        filenames = [
-            f
-            for f in os.listdir(raw_md_path)
-            if os.path.isfile(os.path.join(raw_md_path, f))
-        ]
-
-    filenames = sorted(filenames)
-
-    for filename in filenames:
-        chunks_file_path = os.path.join(chunks_dir, f"{filename[:-3]}.json")
-        if os.path.exists(chunks_file_path):
-            print(
-                f"Skipping file: {filename} - Using cached chunks at {chunks_file_path}")
-            continue
-        process_markdown_file(llm_client, filename,
-                              chunks_dir, chunks_file_path)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Process markdown files in a directory.")
+    parser.add_argument(
+        "md_dir", type=str, help="Path to the directory containing markdown files.")
+    args = parser.parse_args()
+    process_md_directory(args.md_dir)

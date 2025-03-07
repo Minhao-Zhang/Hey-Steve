@@ -1,5 +1,5 @@
 import re
-import requests
+import subprocess
 import html2text
 
 # Variants
@@ -88,15 +88,18 @@ def extract_items():
     Extract all the items from the Minecraft wiki and write them to a file.
     """
 
-    url = "https://minecraft.wiki/w/Item"
+    url = "https://minecraft.wiki/w/Items"
 
     # try to get the content from the cache
     try:
-        with open('data/downloads/Item.html', 'r') as f:
+        with open('data/downloads/Items.html', 'r') as f:
             item = f.read()
     except:
-        response = requests.get(url)
-        item = response.text
+        process = subprocess.Popen(
+            ['wget', '-q', '-O', 'data/downloads/Items.html', url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.communicate()
+        with open('data/downloads/Items.html', 'r') as f:
+            item = f.read()
 
     h = html2text.HTML2Text()
     h.ignore_links = False
@@ -108,7 +111,7 @@ def extract_items():
     md = h.handle(item)
 
     start = md.index('## List of items')
-    end = md.index('### Exclusive to Minecraft Education')
+    end = md.index('### Spawn eggs')
 
     list_of_items_md = md[start:end]
     matches = re.findall(r"/w/([^ ]+) ", list_of_items_md)
@@ -122,10 +125,12 @@ def extract_items():
     # replace \( with ( and \) with )
     items = [re.sub(r'\\', '', item) for item in items]
 
+    items.append("Spawn_Egg")
+
     items = sorted(list(items))
     items = '\n'.join(items)
 
-    with open('urls/items.txt', 'w') as file:
+    with open('download_scripts/items.txt', 'w') as file:
         file.write(items)
 
 
@@ -141,8 +146,11 @@ def extract_blocks():
         with open('data/downloads/Block.html', 'r') as f:
             block = f.read()
     except:
-        response = requests.get(url)
-        block = response.text
+        process = subprocess.Popen(
+            ['wget', '-q', '-O', 'data/downloads/Block.html', url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.communicate()
+        with open('data/downloads/Block.html', 'r') as f:
+            block = f.read()
 
     h = html2text.HTML2Text()
     h.ignore_links = False
@@ -177,8 +185,46 @@ def extract_blocks():
     blocks = sorted(set(blocks))
     blocks = '\n'.join(blocks)
 
-    with open('urls/blocks.txt', 'w') as file:
+    with open('download_scripts/blocks.txt', 'w') as file:
         file.write(blocks)
+
+
+def extract_tutorials():
+    """
+    Extract all the blocks from the Minecraft wiki and write them to a file.
+    """
+
+    url = "https://minecraft.wiki/w/Tutorials"
+
+    # try to get the content from the cache
+    try:
+        with open('data/downloads/Tutorials.html', 'r') as f:
+            tutorials = f.read()
+    except:
+        process = subprocess.Popen(
+            ['wget', '-q', '-O', 'data/downloads/Tutorials.html', url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.communicate()
+        with open('data/downloads/Tutorials.html', 'r') as f:
+            tutorials = f.read()
+
+    h = html2text.HTML2Text()
+    h.ignore_links = False
+    h.ignore_images = True
+    h.ignore_emphasis = True
+    h.skip_internal_links = True
+    h.unicode_snob = True
+    h.body_width = 0
+    md = h.handle(tutorials)
+
+    pattern = r"/w/Tutorial:[^\s]+\s"
+    matches = re.findall(pattern, md)
+
+    matches = sorted(set(matches))
+
+    matches = [match[len("/w/"):] for match in matches]
+
+    with open("download_scripts/tutorials.txt", "w") as f:
+        f.write("\n".join(matches))
 
 
 def gen_name_list(filename: str):
@@ -188,12 +234,19 @@ def gen_name_list(filename: str):
         names = [name.strip() for name in names]
 
         # Process the name a bit
+        names = [name.replace(":", "_") for name in names]
+        names = [name.replace("/", "_") for name in names]
         names = [name.replace("'", "_") for name in names]
         names = [name.replace("(", "_").replace(")", "_") for name in names]
 
+    # if this is the tutorial page, we need to add _ at the end
+    if filename.find("tutorials.txt") != -1:
+        names = [name + "_" for name in names]
     return names
 
 
 if __name__ == "__main__":
-    extract_items()
-    extract_blocks()
+    # extract_items()
+    # extract_blocks()
+    # extract_tutorials()
+    pass

@@ -1,4 +1,6 @@
-# from .chunk_markdown import *
-from .chunking import process_files
-# from .contextual_embedding import *
-# from .extract_heading_info import *
+from .chunking import process_md_file, process_md_directory
+
+__all__ = [
+    "process_md_file",
+    "process_md_directory"
+]

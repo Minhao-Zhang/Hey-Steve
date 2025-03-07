@@ -3,14 +3,15 @@ from tqdm import tqdm
 import argparse
 import re
 import html2text
+from get_page_names import gen_name_list
 
 # UNWANTED_HEADING_2 = ['Achievements', 'Advancements', 'Contents', 'Data values',
 #                       'Entities', 'External links', 'Gallery', 'History', 'Issues',
 #                       'Navigation', 'Navigation menu', 'References', 'Sounds',
 #                       'Trivia', 'Video', 'Videos', 'See also']
-UNWANTED_HEADING_2 = ['Contents', 'Data values', 'External links', 'Gallery',
-                      'Issues', 'Navigation', 'Navigation menu', 'References',
-                      'Sounds', 'Video', 'Videos', 'See also']
+UNWANTED_HEADING_2 = ['Achievements', 'Advancements', 'Contents', 'Data values',
+                      'External links', 'Gallery', 'Issues', 'Navigation',
+                      'Navigation menu', 'References', 'Sounds', 'Video', 'Videos', 'See also']
 
 
 def convert_html_to_markdown(html_file):
@@ -105,7 +106,7 @@ def html_table_to_markdown(html: str) -> str:
     return "\n".join(markdown_lines)
 
 
-def parse_html_tables(markdown_content):
+def parse_html_tables(markdown_content, include_md_table_tag=False):
     while "<table>" in markdown_content:
         start = markdown_content.index("<table>")
         end = markdown_content.index("</table>")
@@ -115,19 +116,15 @@ def parse_html_tables(markdown_content):
         table_text = markdown_content[start: end + len("</table>")]
         md_table_text = html_table_to_markdown(table_text)
         # md_table_text = describe_table(md_table_text)
-        markdown_content = markdown_content[:start] + \
-            md_table_text + markdown_content[end + len("</table>"):]
+        if include_md_table_tag:
+            markdown_content = markdown_content[:start] + \
+                "<md_table>\n" + md_table_text + "\n</md_table>" + \
+                markdown_content[end + len("</table>"):]
+        else:
+            markdown_content = markdown_content[:start] + \
+                md_table_text + markdown_content[end + len("</table>"):]
 
     return markdown_content
-
-
-# def describe_table(markdown_content):
-#     llm_client = OllamaClient()
-#     with open("hey_steve/prompt_template/table_to_text.txt", "r") as f:
-#         pt = f.read()
-
-#     user_message = pt.format(md_table=markdown_content)
-#     return llm_client.chat(user_message=user_message)
 
 
 def remove_unwanted_heading_2(markdown_content):
@@ -202,17 +199,11 @@ def replace_weird_unicode(markdown_content: str) -> str:
 
 
 def main(url_file):
-    with open(url_file, "r") as f:
-        names = f.readlines()
-    names = [name.strip() for name in names]
+    names = gen_name_list(url_file)
 
-    # Process the name a bit
-    names = [name.replace("'", "_") for name in names]
-    names = [name.replace("(", "_").replace(")", "_") for name in names]
-
-    for name in tqdm(names, desc="Converting HTML to Markdown"):
+    for name in tqdm(names, desc=f"Converting HTML in {url_file} to Markdown"):
         md_content = convert_html_to_markdown(f"data/downloads/{name}.html")
-        md_content = parse_html_tables(md_content)
+        md_content = parse_html_tables(md_content, include_md_table_tag=True)
         md_content = remove_unwanted_heading_2(md_content)
         md_content = remove_json_blocks(md_content)
         md_content = remove_junk_content(md_content)
@@ -223,14 +214,15 @@ def main(url_file):
 
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser(
-    #     description='Convert HTML files to Markdown.')
-    # parser.add_argument('url_file', type=str,
-    #                     help='Path to the file containing URLs.')
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser(
+        description='Convert HTML files to Markdown.')
+    parser.add_argument('url_file', type=str,
+                        help='Path to the file containing URLs.')
+    args = parser.parse_args()
 
-    # main(args.url_file)
+    main(args.url_file)
 
-    main("urls/mobs.txt")
-    main("urls/items.txt")
-    main("urls/blocks.txt")
+    # main("download_scripts/mobs.txt")
+    # main("download_scripts/items.txt")
+    # main("download_scripts/blocks.txt")
+    # main("download_scripts/tutorials.txt")
