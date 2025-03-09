@@ -18,7 +18,7 @@ class RecipeTool(Tool):
     def __init__(self, directroy: str = "data/mc/recipe", **kwargs):
 
         super().__init__(**kwargs)
-        self.recipe_files = [f for f in os.listdir(
+        self.recipe_files = [f.replace(".json", "") for f in os.listdir(
             directroy) if f.endswith('.json')]
         self.directroy = directroy
 
@@ -27,7 +27,7 @@ class RecipeTool(Tool):
 
         item_name = item_name.lower()
 
-        if item_name + ".json" in self.recipe_files:
+        if item_name in self.recipe_files:
             with open(os.path.join(self.directroy, item_name + ".json"), "r") as f:
                 return f"The crafting recipe for {item_name} is \n" + f.read() + \
                     "\n The pattern represents a 3x3 crafting table grid. \

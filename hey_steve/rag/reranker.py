@@ -1,24 +1,17 @@
-import time
 import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from sentence_transformers import CrossEncoder
 
 
 class Reranker:
     def __init__(self, model_name='BAAI/bge-reranker-v2-m3'):
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForSequenceClassification.from_pretrained(
-            model_name)
-        self.model.eval()
+        self.model = CrossEncoder(
+            model_name,
+            automodel_args={"torch_dtype": "auto"},
+        )
 
     def calculate_scores(self, pairs: list[list[str]]) -> torch.Tensor:
-        start = time.time()
-        with torch.no_grad():
-            inputs = self.tokenizer(pairs, padding=True, truncation=True,
-                                    return_tensors='pt', max_length=512)
-            scores = self.model(
-                **inputs, return_dict=True).logits.view(-1, ).float()
-            print(time.time() - start)
-            return scores
+        scores = self.model.predict(pairs)
+        return scores
 
     def rerank(self, query_text: str, search_results: list[str]) -> list[str]:
         """Reranks search results based on the reranker score.
@@ -31,22 +24,10 @@ class Reranker:
             The reranked list of search results.
         """
 
-        with open("temp.txt", "a") as f:
-            f.write("Query: " + query_text + "\n\n")
-            for doc in search_results:
-                f.write(doc['text'] + "\n")
-                f.write("="*80 + "\n")
-
         pairs = [[query_text, doc['text']] for doc in search_results]
         scores = self.calculate_scores(pairs)
         reranked_results = sorted(
             zip(search_results, scores.tolist()), key=lambda x: x[1], reverse=True)
-
-        with open("temp.txt", "a") as f:
-            f.write("\n\nAfter Rerank\n\n")
-            for doc in search_results:
-                f.write(doc['text'] + "\n")
-                f.write("="*80 + "\n")
 
         return [result[0] for result in reranked_results]
 
