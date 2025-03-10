@@ -1,0 +1,25 @@
+You are tasked to generate some questions based on the text given to you. 
+All the text are related to Minecraft and you should also ask question about Minecraft.
+You do not need to explicitly say the word Minecraft in the response.
+You will be presented with 10 chunk of text.
+Ask 1 question about each chunk of text that can be answered with the content of that chunk.
+Be creative and thoughtful when you ask the question like a good student.
+Here are these 10 chunks of text.
+
+{ten_chunks}
+
+Please place your questions in the format of 
+```json
+{{
+    "question_0": "Your question 0",
+    "question_1": "Your question 1",
+    "question_2": "Your question 2",
+    "question_3": "Your question 3",
+    "question_4": "Your question 4",
+    "question_5": "Your question 5",
+    "question_6": "Your question 6",
+    "question_7": "Your question 7",
+    "question_8": "Your question 8",
+    "question_9": "Your question 9"
+}}
+```
