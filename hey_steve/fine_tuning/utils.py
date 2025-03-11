@@ -34,29 +34,15 @@ def get_train_test(data_dir="data/chunk_question_pairs") -> Tuple[pd.DataFrame, 
 class LinearAdapter(nn.Module):
     def __init__(self, input_dim):
         super().__init__()
-        self.linear = nn.Linear(input_dim, input_dim)
+        self.linear = nn.Linear(input_dim, 1024)
+        self.linear2 = nn.Linear(1024, input_dim)
 
     def forward(self, x):
-        return self.linear(x)
+        x = self.linear(x)
+        return self.linear2(x)
 
 
-class TripletDataset(Dataset):
-    def __init__(self, data, base_model, negative_sampler):
-        self.data = data
-        self.base_model = base_model
-        self.negative_sampler = negative_sampler
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        item = self.data.iloc[idx]
-        query = item['question']
-        positive = item['chunk']
-        negative = self.negative_sampler()
-
-        query_emb = self.base_model.encode(query, convert_to_tensor=True)
-        positive_emb = self.base_model.encode(positive, convert_to_tensor=True)
-        negative_emb = self.base_model.encode(negative, convert_to_tensor=True)
-
-        return query_emb, positive_emb, negative_emb
+if __name__ == "__main__":
+    train, test = get_train_test()
+    train.to_json("data/chunk_question_pairs/mc_cq_train.json")
+    test.to_json("data/chunk_question_pairs/mc_cq_test.json")
