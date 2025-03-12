@@ -1,48 +1,36 @@
-from torch import nn
-from torch.utils.data import Dataset, DataLoader
 import json
 import os
-from typing import Tuple
-
-import pandas as pd
-from sklearn.model_selection import train_test_split
 
 
-def read_all_cq_json(data_dir="data/chunk_question_pairs"):
-    all_files = os.listdir(data_dir)
-    cq_files = [f for f in all_files if f.startswith(
-        "cq_") and f.endswith(".json")]
-    cq_files.sort(key=lambda x: int(x.split("_")[1].split(".")[0]))
+def combine_json_files(input_dir, output_path):
+    """
+    Reads all json files in a given directory. These json files will only contain
+    list of strings in json format. Combine them together and store them into
+    a new file that the user provides a path for.
 
-    concatenated_data = []
-    for file in cq_files:
-        file_path = os.path.join(data_dir, file)
-        with open(file_path, 'r') as f:
-            data = json.load(f)
-            concatenated_data.extend(data)
-    return concatenated_data
+    Args:
+        input_dir (str): The directory containing the json files.
+        output_path (str): The path to the output json file.
+    """
+    combined_list = []
+    for filename in os.listdir(input_dir):
+        if filename.endswith(".json"):
+            file_path = os.path.join(input_dir, filename)
+            with open(file_path, 'r') as f:
+                data = json.load(f)
+                if isinstance(data, list) and all(isinstance(item, str) for item in data):
+                    combined_list.extend(data)
+                else:
+                    print(
+                        f"Warning: Skipping file {filename} as it does not contain a list of strings.")
 
-
-def get_train_test(data_dir="data/chunk_question_pairs") -> Tuple[pd.DataFrame, pd.DataFrame]:
-    data = read_all_cq_json(data_dir)
-    data = pd.DataFrame(data)
-    train_data, test_data = train_test_split(
-        data, test_size=0.2, random_state=0)
-    return train_data, test_data
-
-
-class LinearAdapter(nn.Module):
-    def __init__(self, input_dim):
-        super().__init__()
-        self.linear = nn.Linear(input_dim, 1024)
-        self.linear2 = nn.Linear(1024, input_dim)
-
-    def forward(self, x):
-        x = self.linear(x)
-        return self.linear2(x)
+    with open(output_path, 'w') as f:
+        json.dump(combined_list, f, indent=4)
 
 
-if __name__ == "__main__":
-    train, test = get_train_test()
-    train.to_json("data/chunk_question_pairs/mc_cq_train.json")
-    test.to_json("data/chunk_question_pairs/mc_cq_test.json")
+if __name__ == '__main__':
+    input_directory = "data/chunks_ftc"  # Replace with your input directory
+    # Replace with your desired output path
+    output_file_path = "data/chunk_questions/all_chunks.json"
+    combine_json_files(input_directory, output_file_path)
+    print(f"Combined JSON data saved to {output_file_path}")

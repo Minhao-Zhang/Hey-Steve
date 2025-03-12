@@ -2,6 +2,7 @@ data/*/*
 models/
 chroma/
 .gradio
+hey_steve/processing/images/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

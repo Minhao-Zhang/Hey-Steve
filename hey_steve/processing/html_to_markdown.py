@@ -203,7 +203,7 @@ def main(url_file):
 
     for name in tqdm(names, desc=f"Converting HTML in {url_file} to Markdown"):
         md_content = convert_html_to_markdown(f"data/downloads/{name}.html")
-        md_content = parse_html_tables(md_content, include_md_table_tag=True)
+        md_content = parse_html_tables(md_content)
         md_content = remove_unwanted_heading_2(md_content)
         md_content = remove_json_blocks(md_content)
         md_content = remove_junk_content(md_content)
@@ -214,15 +214,15 @@ def main(url_file):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description='Convert HTML files to Markdown.')
-    parser.add_argument('url_file', type=str,
-                        help='Path to the file containing URLs.')
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser(
+    #     description='Convert HTML files to Markdown.')
+    # parser.add_argument('url_file', type=str,
+    #                     help='Path to the file containing URLs.')
+    # args = parser.parse_args()
 
-    main(args.url_file)
+    # main(args.url_file)
 
-    # main("download_scripts/mobs.txt")
-    # main("download_scripts/items.txt")
-    # main("download_scripts/blocks.txt")
-    # main("download_scripts/tutorials.txt")
+    main("download_scripts/mobs.txt")
+    main("download_scripts/items.txt")
+    main("download_scripts/blocks.txt")
+    main("download_scripts/tutorials.txt")
