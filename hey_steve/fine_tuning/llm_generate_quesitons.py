@@ -9,9 +9,9 @@ import litellm
 dotenv.load_dotenv()
 
 # Existing constants
-CHUNK_FILE = "data/chunk_questions/all_chunks.json"
+CHUNK_FILE = "data/chunk_question_pairs_new/all_chunks.json"
 PROMPT_TEMPLATE_PATH = "hey_steve/prompt_template/generate_chunk_questions.txt"
-CACHE_FILE = "data/chunk_questions/chunk_question_pairs.json"  # New cache file
+CACHE_FILE = "data/chunk_question_pairs_new/chunk_question_pairs.json"  # New cache file
 
 
 def generate_questions(chunk, prompt_template):
@@ -26,8 +26,8 @@ def generate_questions(chunk, prompt_template):
     for attempt in range(10):
         try:
             response = litellm.completion(
-                model="gemini/gemini-2.0-flash",
-                api_key=os.environ.get("GEMINI_API_KEY"),
+                model="deepseek/deepseek-chat",
+                api_key=os.environ.get("DEEPSEEK_API_KEY"),
                 messages=messages
             )
             question_data = json.loads(

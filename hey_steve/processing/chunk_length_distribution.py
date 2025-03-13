@@ -125,7 +125,7 @@ def plot_token_length_distribution(token_counts):
 
 
 if __name__ == "__main__":
-    dir_path = 'data/chunks_ftc/'  # Use data/chunks directory
+    dir_path = 'data/chunks_custom/'  # Use data/chunks directory
     chunks = read_json_files_from_directory(dir_path)
     plot_character_length_distribution(chunks)
     token_counts = count_tokens_per_chunk(chunks)

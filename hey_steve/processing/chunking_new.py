@@ -1,6 +1,6 @@
 import os
 import json
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter, MarkdownTextSplitter
 from chroma_embed import *
 from sentence_transformers import SentenceTransformer
 
@@ -12,14 +12,16 @@ def custom_embed(x):
 
 
 rcts = RecursiveCharacterTextSplitter(
-    chunk_size=800,
+    chunk_size=600,
     chunk_overlap=200,
     separators=["\n\n", "\n", ".", "?", "!", " ", ""],
     keep_separator=False
 )
 rtc = RecursiveTokenChunker(
     chunk_size=200,
-    chunk_overlap=0, separators=["\n\n", "\n", ".", "?", "!", " ", ""]
+    chunk_overlap=50,
+    separators=["\n\n", "\n", ".", "?", "!", " ", ""],
+    keep_separator=False
 )
 ftc = FixedTokenChunker(
     chunk_size=250,

@@ -29,8 +29,8 @@ def combine_json_files(input_dir, output_path):
 
 
 if __name__ == '__main__':
-    input_directory = "data/chunks_ftc"  # Replace with your input directory
+    input_directory = "data/chunks_custom"  # Replace with your input directory
     # Replace with your desired output path
-    output_file_path = "data/chunk_questions/all_chunks.json"
+    output_file_path = "data/chunk_question_pairs_new/all_chunks.json"
     combine_json_files(input_directory, output_file_path)
     print(f"Combined JSON data saved to {output_file_path}")
