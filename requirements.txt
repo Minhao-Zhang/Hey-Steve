@@ -1,12 +1,17 @@
 beautifulsoup4
 chromadb
+fuzzywuzzy
 html2text
+langchain
 langchain_text_splitters
 litellm
+matplotlib
+numpy
 pandas
 python-dotenv
 requests
-smolagents
+sentence_transformers
+smolagents[litellm, gradio, telemetry]
+tiktoken
 torch
 tqdm
-transformers

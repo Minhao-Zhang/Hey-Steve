@@ -10,7 +10,7 @@ class RetrieverTool(Tool):
     inputs = {
         "query": {
             "type": "string",
-            "description": "The query to perform. This should be semantically close to your target documents. Use the affirmative form rather than a question.",
+            "description": "The query to perform. This should be semantically close to your target documents.",
         },
         "n_result": {
             "type": "integer",
@@ -32,5 +32,5 @@ class RetrieverTool(Tool):
         docs = self.steve_rag.query_with_reranking(query, n_results=n_result)
         return "\nRetrieved documents:\n" + "".join(
             [f"\n\n===== Document {str(i)} =====\n" +
-             doc['text'] for i, doc in enumerate(docs)]
+             doc['text'].replace("search_document: ", "") for i, doc in enumerate(docs)]
         )

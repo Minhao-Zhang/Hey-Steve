@@ -1,11 +1,8 @@
 import chromadb
-from chromadb.utils.embedding_functions.ollama_embedding_function import (
-    OllamaEmbeddingFunction,
-)
-from typing import List, Dict, Any
+from chromadb.utils.embedding_functions import EmbeddingFunction, DefaultEmbeddingFunction
+from typing import List, Dict, Any, Optional
 from .reranker import Reranker
 from tqdm import tqdm
-import requests
 
 
 class SteveRAG:
@@ -16,33 +13,23 @@ class SteveRAG:
 
     def __init__(self,
                  collection_name: str = "mc_rag",
-                 ollama_embed_model: str = "snowflake-arctic-embed2:latest",
+                 embedding_function: Optional[EmbeddingFunction] = None,
                  reranker: Reranker = None):
         """
-        Initializes the SteveRAG with ChromaDB client, embedding function, and reranker.
+        Initializes the SteveRAG with ChromaDB client, and embedding function.
 
         Args:
             collection_name (str): The name of the ChromaDB collection.
-            ollama_embed_model (str): The name of the Ollama embedding model.
+            embedding_function (Optional[EmbeddingFunction]):  The embedding function to use. Defaults to None, in which case DefaultEmbeddingFunciton is used with default model.
             reranker (Reranker, optional): A reranker object for reranking the results. Defaults to None.
         """
 
         self.reranker = reranker
         self.client = chromadb.PersistentClient()
-        self.embedding_fn = OllamaEmbeddingFunction(
-            url="http://localhost:11434/api/embeddings",
-            model_name=ollama_embed_model,
-        )
-
-        try:
-            response = requests.get("http://localhost:11434/api/ps", timeout=3)
-            response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
-        except requests.ConnectionError:
-            print("Warning: Ollama server is not running on http://localhost:11434.")
-        except requests.HTTPError as e:
-            print(f"Warning: Ollama server returned an error: {e}")
-        except requests.Timeout:
-            print("Warning: Ollama server timed out on http://localhost:11434.")
+        if embedding_function is None:
+            self.embedding_fn = DefaultEmbeddingFunction()
+        else:
+            self.embedding_fn = embedding_function
 
         self.collection = self.client.get_or_create_collection(
             name=collection_name,
@@ -59,7 +46,8 @@ class SteveRAG:
         start_id = self._id_counter
         ids = [str(start_id + i) for i in range(len(documents))]
         self._id_counter += len(documents)
-        texts = [doc["text"] for doc in documents]
+        texts = ["search_document: " + doc["text"]
+                 for doc in documents]  # using nomic-embed-text-v2-moe
         metadatas = [doc.get("metadata", {}) for doc in documents]
 
         self.collection.add(
@@ -80,7 +68,8 @@ class SteveRAG:
             List[Dict[str, Any]]: A list of dictionaries containing the retrieved documents and their metadata.
         """
         results = self.collection.query(
-            query_texts=[query_text],
+            # using nomic-embed-text-v2-moe
+            query_texts=["search_query: " + query_text],
             n_results=n_results
         )
 
