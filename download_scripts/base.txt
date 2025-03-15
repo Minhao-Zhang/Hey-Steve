@@ -1,0 +1,14 @@
+Trading
+Brewing
+Enchanting
+Mob
+Block
+Item
+Biome
+Effect
+Crafting
+Smelting
+Structure
+Redstone
+Commands
+Tutorials

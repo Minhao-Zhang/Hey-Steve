@@ -214,15 +214,10 @@ def main(url_file):
 
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser(
-    #     description='Convert HTML files to Markdown.')
-    # parser.add_argument('url_file', type=str,
-    #                     help='Path to the file containing URLs.')
-    # args = parser.parse_args()
+    parser = argparse.ArgumentParser(
+        description='Convert HTML files to Markdown.')
+    parser.add_argument('url_file', type=str,
+                        help='Path to the file containing URLs.')
+    args = parser.parse_args()
 
-    # main(args.url_file)
-
-    main("download_scripts/mobs.txt")
-    main("download_scripts/items.txt")
-    main("download_scripts/blocks.txt")
-    main("download_scripts/tutorials.txt")
+    main(args.url_file)
