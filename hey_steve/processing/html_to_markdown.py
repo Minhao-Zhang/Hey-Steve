@@ -1,3 +1,5 @@
+import pathlib
+import os
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 import argparse
@@ -198,26 +200,37 @@ def replace_weird_unicode(markdown_content: str) -> str:
     return markdown_content
 
 
-def main(url_file):
-    names = gen_name_list(url_file)
+def main(input_dir, output_dir):
+    # Create output directory if it doesn't exist
+    pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-    for name in tqdm(names, desc=f"Converting HTML in {url_file} to Markdown"):
-        md_content = convert_html_to_markdown(f"data/downloads/{name}.html")
+    # Get all HTML files in input directory
+    html_files = [f for f in os.listdir(input_dir) if f.endswith('.html')]
+
+    for html_file in tqdm(html_files, desc=f"Converting HTML files in {input_dir}"):
+        input_path = os.path.join(input_dir, html_file)
+        md_content = convert_html_to_markdown(input_path)
         md_content = parse_html_tables(md_content)
         md_content = remove_unwanted_heading_2(md_content)
         md_content = remove_json_blocks(md_content)
         md_content = remove_junk_content(md_content)
         md_content = replace_weird_unicode(md_content)
 
-        with open(f"data/md/{name}.md", "w") as f:
+        # Create output path with .md extension
+        output_file = os.path.splitext(html_file)[0] + '.md'
+        output_path = os.path.join(output_dir, output_file)
+
+        with open(output_path, "w", encoding='utf-8') as f:
             f.write(md_content)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Convert HTML files to Markdown.')
-    parser.add_argument('url_file', type=str,
-                        help='Path to the file containing URLs.')
+        description='Convert HTML files in a directory to Markdown.')
+    parser.add_argument('input_dir', type=str,
+                        help='Path to directory containing HTML files.')
+    parser.add_argument('output_dir', type=str,
+                        help='Path to directory to save Markdown files.')
     args = parser.parse_args()
 
-    main(args.url_file)
+    main(args.input_dir, args.output_dir)

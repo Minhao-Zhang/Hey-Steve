@@ -4,17 +4,9 @@ Blast_Protection
 Breach
 Channeling
 Cleaving
-Curse_of_Binding
-Curse_of_Vanishing
 Density
 Depth_Strider
 Efficiency
-Enchanted_Book
-Enchanting/Levels
-Enchanting?section=9&veaction=edit
-Enchantment_definition
-Enchantment_mechanics#Step_One_-_Applying_modifiers_to_the_enchantment_level
-Enchantment_table
 Feather_Falling
 Fire_Aspect
 Fire_Protection
@@ -43,9 +35,7 @@ Sharpness
 Silk_Touch
 Smite
 Soul_Speed
-Sweeping_Edge
 Swift_Sneak
 Thorns
 Unbreaking
-Villager_Trade_Rebalance
 Wind_Burst

@@ -3,7 +3,6 @@ Bamboo_jungle
 Basalt_deltas
 Beach
 Birch_forest
-Cave
 Cherry_grove
 Cold_ocean
 Crimson_forest
@@ -27,13 +26,11 @@ Frozen_river
 Grove
 Ice_spikes
 Jagged_peaks
-Java_Edition
 Jungle
 Lukewarm_ocean
 Lush_caves
 Mangrove_swamp
 Meadow
-Mountain
 Mushroom_fields
 Nether_wastes
 Ocean
@@ -41,7 +38,6 @@ Old_growth_birch_forest
 Old_growth_pine_taiga
 Old_growth_spruce_taiga
 Pale_garden
-Plain
 Plains
 River
 Savanna
@@ -58,11 +54,8 @@ Stony_shore
 Sunflower_plains
 Swamp
 Taiga
-The_End
 The_End_(biome)
-The_Nether
 The_Void
-Tree
 Warm_ocean
 Warped_forest
 Windswept_Savanna

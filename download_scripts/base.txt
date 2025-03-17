@@ -8,6 +8,7 @@ Biome
 Effect
 Crafting
 Smelting
+Smithing
 Structure
 Redstone
 Commands

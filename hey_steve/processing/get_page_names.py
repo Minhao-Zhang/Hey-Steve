@@ -75,7 +75,7 @@ def extract_links_from_table_column(markdown_table, column_index=0):
     extracted = []
     for line in markdown_table.splitlines():
         parts = line.strip().split('|')
-        if len(parts) > column_index:
+        if len(parts) > column_index and len(parts) > 1:
             column_content = parts[column_index].strip()
             match = pattern.search(column_content)
             if match and not match.group(1).startswith('File:'):
@@ -192,6 +192,17 @@ def extract_blocks():
     write_to_file('download_scripts/block.txt', sorted(set(blocks)))
 
 
+def extract_effects():
+    html_content = get_html_content('data/downloads/Effect.html')
+    md = html_to_markdown(html_content)
+    section = extract_markdown_section(
+        md, '## Effect list', '### Descriptions')
+    effects = extract_links_with_regex(section)
+    effects = sanitize_names(effects)
+    effects = [e for e in effects if not e.startswith("Effect?")]
+    write_to_file('download_scripts/effect.txt', sorted(set(effects)))
+
+
 def extract_enchantments():
     html_content = get_html_content('data/downloads/Enchanting.html')
     md = html_to_markdown(html_content)
@@ -199,6 +210,7 @@ def extract_enchantments():
         md, '## Summary of enchantments', '## Summary of enchantments by item')
     enchants = extract_links_from_table_column(section)
     enchants = sanitize_names(enchants)
+    enchants.remove("Enchanting?section=9&veaction=edit")
     write_to_file('download_scripts/enchantment.txt', sorted(set(enchants)))
 
 
@@ -222,6 +234,28 @@ def extract_items():
     items = [item for item in items if item not in calculate_items_to_remove()]
     items.append('Spawn_Egg')
     write_to_file('download_scripts/item.txt', sorted(set(items)))
+
+
+def extract_smithing():
+    html_content = get_html_content('data/downloads/Smithing.html')
+    md = html_to_markdown(html_content)
+    section = extract_markdown_section(
+        md, '### Template', '### Material')
+    smithing = extract_links_with_regex(section)
+    smithing = sanitize_names(smithing)
+    smithing = [s for s in smithing if not s.startswith("Smithing?")]
+    write_to_file('download_scripts/smithing.txt', sorted(set(smithing)))
+
+
+def extract_structure():
+    html_content = get_html_content('data/downloads/Structure.html')
+    md = html_to_markdown(html_content)
+    section = extract_markdown_section(
+        md, '## Overworld', '## Removed structures')
+    structure = extract_links_from_table_column(section)
+    structure = sanitize_names(structure)
+    structure = [s for s in structure if not s.startswith("Structure?")]
+    write_to_file('download_scripts/structure.txt', sorted(set(structure)))
 
 
 def extract_tutorials():
@@ -250,3 +284,6 @@ if __name__ == "__main__":
     extract_enchantments()
     extract_biomes()
     extract_mobs()
+    extract_effects()
+    extract_smithing()
+    extract_structure()

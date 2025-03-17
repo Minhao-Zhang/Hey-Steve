@@ -11,7 +11,7 @@ dotenv.load_dotenv()
 # Existing constants
 CHUNK_FILE = "data/chunk_question_pairs_new/all_chunks.json"
 PROMPT_TEMPLATE_PATH = "hey_steve/prompt_template/generate_chunk_questions.txt"
-CACHE_FILE = "data/chunk_question_pairs_new/chunk_question_pairs.json"  # New cache file
+CACHE_FILE = "data/chunk_question_pairs/chunk_question_pairs.json"  # New cache file
 
 
 def generate_questions(chunk, prompt_template):

@@ -27,8 +27,8 @@ pip install -r requirements.txt
 
     I provided several files in the `download_scripts` folder. They are all page names as they all share a common prefix of `https://minecraft.wiki/w/`. Thus, I would dynamically pad the URLs with the prefix.
     
-    1. You can directly use `sh download_webpages.sh PATH_TO_URL_FILE` to download all the pages. You can see them under `data/downloads`. I used `wget` here since it just does not get banned when I scrape all the pages. 
-    2. You could also update the URLs as mine might be outdated. You can run `python get_page_names.py` to get the latest URLs. 
+    1. You can directly use `sh download_scripts/download_webpages.sh PATH_TO_URL_FILE` to download all the pages. You can see them under `data/downloads`. I used `wget` here since it just does not get banned when I scrape all the pages. 
+    2. You could also update the URLs as mine might be outdated. You can run `python hey_steve/processing/get_page_names.py` to get the latest URLs. 
 
 4. Run the `python hey_steve/processing/html_to_markdown.py PATH_TO_URL_FILE` to process the pages into a semi-refined markdown file. In the process, only the essentail text information is kept. 
 5. Run the `python hey_steve/processing/chunking.py PATH_TO_DIRECTORY` to precess the pages into individual chunks with context prepended to each chunk. 
@@ -44,7 +44,9 @@ data/
 └── md/ # converted html files in markdown
 ```
 
-## TODO 
+## Demo Videos
 
-- [ ] Change chunking strategy to allow bigger chunks. 
-- [ ] Add a line break between context and chunk.
+<img src="demo/demo1.gif" alt="Demo 1" width="500"/>
+<img src="demo/demo2.gif" alt="Demo 2" width="500"/>
+<img src="demo/demo3.gif" alt="Demo 3" width="500"/>
+
